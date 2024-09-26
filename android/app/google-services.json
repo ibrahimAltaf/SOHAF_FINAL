@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "142037914632",
+    "project_id": "arbeittech-498cc",
+    "storage_bucket": "arbeittech-498cc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:142037914632:android:f7720c15acbd60e44e2dbd",
+        "android_client_info": {
+          "package_name": "app.arbitech.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFTP9j_W8w9-oot5nZt0wInEnvT0a1LsM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:142037914632:android:5e7b439f642c878a4e2dbd",
+        "android_client_info": {
+          "package_name": "com.arbeittech.pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFTP9j_W8w9-oot5nZt0wInEnvT0a1LsM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:142037914632:android:27da81b0ae5b7c284e2dbd",
+        "android_client_info": {
+          "package_name": "com.arbeittech.serviceman"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFTP9j_W8w9-oot5nZt0wInEnvT0a1LsM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,56 @@
+import 'react-native-gesture-handler';
+import React, {useState, useEffect} from 'react';
+import {Provider} from 'react-redux';
+import {helpers} from './src/utils/helpers';
+import {Store} from './src/Redux/store/store';
+import {Linking, Platform} from 'react-native';
+import {StripeProvider} from '@stripe/stripe-react-native';
+import MainNavigation from './src/Routes/MainNavigation';
+import VersionCheck from 'react-native-version-check';
+import FlashMessage from "react-native-flash-message";
+import UpdatePopUp from './src/component/UpdateApp/UpdatePopUp';
+
+export default function App() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState(null);
+
+  useEffect(() => {
+    checkAppVersion();
+  }, []);
+  const checkAppVersion = () => {
+    VersionCheck.needUpdate({depth:2}).then(res => {
+      console.log("VERSION CHECK RESPONSE =====> ", res);
+      if (res?.currentVersion!==res?.latestVersion) {
+        setCurrentVersion(res?.currentVersion);
+        setModalVisible(true);
+      } else {
+        setModalVisible(false);
+      };
+    });
+  };
+  const redirectToStore = () => {
+    if (Platform.OS==="android") {
+      Linking.openURL(helpers.constant.playStoreLink);
+    } else {
+      Linking.openURL(helpers.constant.appStoreLink);
+    };
+  };
+
+  return (
+    <StripeProvider
+      urlScheme={"your-url-scheme"}
+      publishableKey={helpers.api.publishableKey}
+      merchantIdentifier={helpers.api.merchantName}>
+      <Provider store={Store}>
+        <MainNavigation />
+        <FlashMessage style={{marginBottom:20}} />
+        <UpdatePopUp
+          modalVisible={modalVisible}
+          currentVersion={currentVersion}
+          redirectToStore={redirectToStore}
+          toggleModal={() => setModalVisible(!modalVisible)}
+        />
+      </Provider>
+    </StripeProvider>
+  );
+}
