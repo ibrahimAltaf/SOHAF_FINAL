@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, FlatList, TouchableOpacity, Modal, Image, Press
 import Header from '../component/Header/header';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
+import { theme } from '../constants/styles';
 
 const Notification = () => {
     const navigation = useNavigation();
@@ -16,7 +17,7 @@ const Notification = () => {
     const fetchNotifications = async () => {
         if (!access_token) return; // If not logged in, skip fetching
         try {
-            const response = await fetch('https://arbeittech.com/api/user/notifications/user', {
+            const response = await fetch('https://My Denzen.com/api/user/notifications/user', {
                 method: 'GET',
                 headers: {
                     "X-Requested-With": "XMLHttpRequest",
@@ -59,7 +60,7 @@ const Notification = () => {
 
     return (
         <>
-            <View style={{ marginTop: 28 }}>
+            <View style={{  }}>
                 <Header
                     title={"Notifications"}
                     backArrow
@@ -128,7 +129,7 @@ const Notification = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F3F8FE',
+        backgroundColor:theme.color.white,
     },
     listContainer: {
         padding: 20,

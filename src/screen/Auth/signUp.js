@@ -1,473 +1,505 @@
-import React, {useEffect, useState, useRef} from "react";
-import {StyleSheet, View, Image, Text, ScrollView, TouchableOpacity, Platform, KeyboardAvoidingView, Animated} from "react-native";
-import {useDispatch} from "react-redux";
-import {theme} from "../../constants/styles";
-import {TextInput} from 'react-native-paper';
-import {FontFamily} from "../../constants/fonts";
-import {useNavigation} from '@react-navigation/native';
-import {ToastMessage, helpers} from "../../utils/helpers";
-import {CountryPicker} from 'react-native-country-codes-picker';
-import {SetUserDetail, SetUserToken} from "../../Redux/actions/actions";
-import CheckBox from 'react-native-check-box';
-import DeviceInfo from 'react-native-device-info';
-import firestore from '@react-native-firebase/firestore';
-import messaging from '@react-native-firebase/messaging';
+import React, { useEffect, useState, useRef } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+  KeyboardAvoidingView,
+  Animated,
+  Image,
+  ImageBackground,
+} from "react-native";
+import { useDispatch } from "react-redux";
+import { theme } from "../../constants/styles";
+import { TextInput, Avatar } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
+import { ToastMessage } from "../../utils/helpers";
+import { SetUserDetail, SetUserToken } from "../../Redux/actions/actions";
 import CustomButton from "../../component/Buttons/customButton";
 import CustomStatusBar from "../../component/StatusBar/customStatusBar";
+import { RadioButton } from "react-native-paper";
+import * as ImagePicker from "react-native-image-picker";
+import DeviceInfo from "react-native-device-info";
+import messaging from "@react-native-firebase/messaging";
+import CountryPicker from 'react-native-country-picker-modal';
 
-const SignUp = (props) => {
-    const dispatch = useDispatch();
-    const navigation = useNavigation();
-    const {routeName} = props.route.params;
-    const pulseAnim = useRef(new Animated.Value(1)).current;
-    const [show, setShow] = useState(false);
-    const [loader, setLoader] = useState(false);
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("")
-    const [userEmail, setUserEmail] = useState("");
-    const [countryCode, setCountryCode] = useState("+1");
-    const [countryFlag, setCountryFlag] = useState("🇺🇸");
-    const [userNumber, setUserNumber] = useState("");
-    const [userPassword, setUserPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [referralCode, setReferralCode] = useState("");
-    const [passwordToggle, setPasswordToggle] = useState(true);
-    const [privacyCheckBox, setPrivacyCheckBox] = useState(false);
+const SignUp = () => {
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
 
-    useEffect(() => {
-        const pulse = () => {
-          Animated.sequence([
-            Animated.timing(pulseAnim, {
-              toValue: 1.2,
-              duration: 1000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(pulseAnim, {
-              toValue: 1,
-              duration: 1000,
-              useNativeDriver: true,
-            }),
-          ]).start(() => pulse());
-        };
-        pulse();
-    }, [pulseAnim]);
-    const validateField = () => {
-        const cleanedEmail = userEmail.replace(/\s/g, '');
-        const emailValidation = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,7})+$/;
-        if (firstName==="") {
-            ToastMessage("First Name Required*");
-            return false;
-        } else if (lastName==="") {
-            ToastMessage("Last Name Required*");
-            return false;
-        } else if (cleanedEmail==="") {
-            ToastMessage("User Email Required*");
-            return false;
-        } else if (emailValidation.test(cleanedEmail)===false) {
-            ToastMessage("Enter Valid Email Address");
-            return false;
-        } else if (userNumber==="") {
-            ToastMessage("Phone Number Required*");
-            return false;
-        } else if (userPassword==="") {
-            ToastMessage("Password Required*");
-            return false;
-        } else if (userPassword.length<=5) {
-            ToastMessage("Password should be 6 characters");
-            return false;
-        } else if (confirmPassword==="") {
-            ToastMessage("Password Required*");
-            return false;
-        } else if (confirmPassword.length<=5) {
-            ToastMessage("Password should be 6 characters");
-            return false;
-        } else if (userPassword!==confirmPassword) {
-            ToastMessage("Password and Confirm Password does not match");
-            return false;
-        } else if (!privacyCheckBox) {
-            ToastMessage("Select Privacy Policy!");
-            return false;
-        };
-        return true;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const [loader, setLoader] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userNumber, setUserNumber] = useState("");
+  const [countryCode, setCountryCode] = useState('US');
+  const [callingCode, setCallingCode] = useState('1');
+  const [userPassword, setUserPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("user");
+  const [avatar, setAvatar] = useState(null);
+  const [passwordToggle, setPasswordToggle] = useState(true);
+
+  useEffect(() => {
+    const pulse = () => {
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]).start(() => pulse());
     };
-    const createAccountHandle = async () => {
-        try {
-            if (validateField()) {
-                setLoader(true);
-                const myHeaders = new Headers();
-                myHeaders.append("X-Requested-With", "XMLHttpRequest");
+    pulse();
+  }, [pulseAnim]);
 
-                let fcmToken = "";
-                const deviceId = await DeviceInfo?.getUniqueId();
-                await messaging().registerDeviceForRemoteMessages();
-                const authStatus = await messaging().requestPermission();
-                const enabled =
-                    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-                    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  const validateField = () => {
+    const cleanedEmail = userEmail.replace(/\s/g, "");
+    const emailValidation = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,7})+$/;
+    if (firstName === "") {
+      ToastMessage("First Name Required*");
+      return false;
+    } else if (lastName === "") {
+      ToastMessage("Last Name Required*");
+      return false;
+    } else if (cleanedEmail === "") {
+      ToastMessage("User Email Required*");
+      return false;
+    } else if (emailValidation.test(cleanedEmail) === false) {
+      ToastMessage("Enter Valid Email Address");
+      return false;
+    } else if (userNumber === "") {
+      ToastMessage("Phone Number Required*");
+      return false;
+    } else if (userPassword === "") {
+      ToastMessage("Password Required*");
+      return false;
+    } else if (userPassword.length <= 5) {
+      ToastMessage("Password should be 6 characters");
+      return false;
+    } else if (confirmPassword === "") {
+      ToastMessage("Confirm Password Required*");
+      return false;
+    } else if (confirmPassword.length <= 5) {
+      ToastMessage("Confirm Password should be 6 characters");
+      return false;
+    } else if (userPassword !== confirmPassword) {
+      ToastMessage("Password and Confirm Password do not match");
+      return false;
+    }
+    return true;
+  };
 
-                if (enabled) {
-                    fcmToken = await messaging().getToken();
-                };
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibrary({
+      mediaType: "photo",
+      quality: 1,
+    });
 
-                const formdata = new FormData();
-                formdata.append("first_name", firstName);
-                formdata.append("last_name", lastName);
-                formdata.append("email", userEmail);
-                formdata.append("password", userPassword);
-                formdata.append("password_confirmation", confirmPassword);
-                formdata.append("country_code", countryCode);
-                formdata.append("country_flag", countryFlag);
-                formdata.append("mobile", userNumber);
-                formdata.append("device_id", deviceId);
-                formdata.append("device_token", fcmToken);
-                formdata.append("device_type", Platform.OS);
-                formdata.append("login_by", "manual");
-                formdata.append("firebase_id", "");
+    if (!result.didCancel && result.assets) {
+      setAvatar(result.assets[0]);
+    }
+  };
 
-                const requestOptions = {
-                    method: "POST",
-                    headers: myHeaders,
-                    body: formdata,
-                    redirect: "follow"
-                };
+  const createAccountHandle = async () => {
+    try {
+      if (validateField()) {
+        setLoader(true);
+        const deviceId = await DeviceInfo.getUniqueId();
+        await messaging().registerDeviceForRemoteMessages();
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-                fetch(`${helpers.api.baseUrl}signup`, requestOptions)
-                .then((response) => response.json())
-                .then((result) => {
-                    if (result?.access_token!==undefined) {
-                        setLoader(false);
-                        dispatch(SetUserToken(result?.access_token));
-                        dispatch(SetUserDetail(result));
-                        handleNavigation(routeName);
-                    } else {
-                        setLoader(false);
-                        ToastMessage(result?.message);
-                    };
-                }).catch((error) => {
-                    setLoader(false);
-                    ToastMessage(error?.message);
-                });
-            };
-        } catch (error) {
+        let fcmToken = enabled ? await messaging().getToken() : "";
+
+        const formdata = new FormData();
+        formdata.append("name", firstName);
+        formdata.append("email", userEmail);
+        formdata.append("password", userPassword);
+        formdata.append("password_confirmation", confirmPassword);
+        formdata.append("phone", userNumber);
+
+        if (avatar) {
+          formdata.append("avatar", {
+            uri: avatar.uri,
+            type: avatar.type || "image/jpeg",
+            name: avatar.fileName || "avatar.jpg",
+          });
+        }
+
+        formdata.append("type", role);
+        formdata.append("device_id", deviceId);
+        formdata.append("device_token", fcmToken);
+        formdata.append("device_type", Platform.OS);
+
+        fetch("https://dodgerblue-chinchilla-339711.hostingersite.com/api/signup", {
+          method: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: formdata,
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            setLoader(false);
+            if (result?.access_token) {
+              dispatch(SetUserToken(result.access_token));
+              dispatch(SetUserDetail(result));
+              
+              console.log(result)
+            } else {
+              ToastMessage(result?.message);
+              console.log(result)
+              navigation.navigate("Login");
+            }
+          })
+          .catch((error) => {
             setLoader(false);
             ToastMessage(error?.message);
-        };
-    };
-    const addDataInFirebase = async (data) => {
-        try {
-            const firestoreRef = firestore()
-            .collection('Users').doc(data?.userId);
-            await firestoreRef.set({
-                email: data?.email,
-                name: data?.fullName,
-                userProfile: null,
-                fcmToken: data?.fcmToken,
-            });
-        } catch (error) {
-            ToastMessage(error?.message);
-        };
-    };
-    const handleNavigation = (routeName) => {
-        switch (routeName) {
-            case "booking":
-              navigation.replace("Bookings");
-              break;
-            case "cart":
-              navigation.replace("CheckOut");
-              break;
-            case "more":
-            case "profile":
-              navigation.replace("Profile");
-              break;
-            case "inbox":
-              navigation.replace("Profile");
-              break;
-            case "coupons":
-              navigation.replace("Bookings");
-              break;
-            case "checkout":
-              navigation.replace("CheckOut");
-              break;
-            case "finalcheckout":
-              navigation.replace("FinalCheckout");
-              break;
-            default:
-              navigation.replace("BottomTabNavigator");
-              break;
-          };
-    };
-
-    return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS==="ios"?"padding":null}>
-            <CustomStatusBar
-                barStyle={"dark-content"}
-                backgroundColor={theme.color.secondaryColor}
-            />
-            <ScrollView>
-                {/* <View style={{paddingHorizontal:27}}>
-                    <Image
-                        style={styles.logoStyle}
-                        source={require("../../assets/images/logo.png")}
-                    />
-                </View> */}
-                <View style={styles.logo}>
-                    <View>
-                        <Animated.View style={{transform:[{scale:pulseAnim}]}}>
-                        <Image style={{
-                            width:200,
-                            height:70,
-                            objectFit:"cover"
-                        }} source={require("../../assets/images/newlogo.png")} />
-                        </Animated.View>
-                    </View>
-                  
-                </View>
-                <View style={{paddingHorizontal:27,marginTop:15}}>
-                    <View>
-                        <TextInput
-                            value={firstName}
-                            label={"First Name"}
-                            style={{backgroundColor:"transparent"}}
-                            onChangeText={(text) => setFirstName(text)}
-                        />
-                    </View>
-                    <View style={{marginTop:12}}>
-                        <TextInput
-                            value={lastName}
-                            label={"Last Name"}
-                            style={{backgroundColor:"transparent"}}
-                            onChangeText={(text) => setLastName(text)}
-                        />
-                    </View>
-                    <View style={{marginTop:12}}>
-                        <TextInput
-                            value={userEmail}
-                            label={"Email Address"}
-                            style={{backgroundColor:"transparent"}}
-                            onChangeText={(text) => setUserEmail(text)}
-                        />
-                    </View>
-                    <View style={{flexDirection:"row",marginTop:12}}>
-                        <View style={{justifyContent:"center"}}>
-                            <TouchableOpacity
-                                activeOpacity={.7}
-                                onPress={() => setShow(true)}
-                                style={styles.countryCodeStyle}>
-                                <Text style={{color:'#000',fontSize:16}}>
-                                    {`${countryFlag}  ${countryCode}`}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={{flex:1,justifyContent:"center"}}>
-                            <TextInput
-                                value={userNumber}
-                                label={"Phone Number"}
-                                keyboardType={"number-pad"}
-                                style={{backgroundColor:"transparent"}}
-                                onChangeText={(text) => setUserNumber(text)}
-                            />
-                        </View>
-                    </View>
-                    <View style={{position:"relative",marginTop:12}}>
-                        <TextInput
-                            label={"Password"}
-                            value={userPassword}
-                            secureTextEntry={passwordToggle}
-                            style={{backgroundColor:"transparent"}}
-                            onChangeText={(text) => setUserPassword(text)}
-                        />
-                        <View style={{position:"absolute",
-                        top:0,bottom:0,right:0,justifyContent:"center"}}>
-                            <TouchableOpacity
-                                activeOpacity={.7}
-                                style={{paddingVertical:10,paddingHorizontal:20}}
-                                onPress={() => setPasswordToggle(!passwordToggle)}>
-                                {passwordToggle?
-                                    <Image
-                                        style={{height:20,width:20,resizeMode:"cover"}}
-                                        source={require('../../assets/images/view.png')}
-                                    />
-                                :
-                                    <Image
-                                        style={{height:20,width:20,resizeMode:"cover"}}
-                                        source={require('../../assets/images/hide.png')}
-                                    />
-                                }
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                    <View style={{marginTop:12}}>
-                        <TextInput
-                            value={confirmPassword}
-                            label={"Confirm Password"}
-                            style={{backgroundColor:"transparent"}}
-                            onChangeText={(text) => setConfirmPassword(text)}
-                        />
-                    </View>
-                    <View style={{marginTop:12}}>
-                        <TextInput
-                            value={referralCode}
-                            label={"Referral Code"}
-                            style={{backgroundColor:"transparent"}}
-                            onChangeText={(text) => setReferralCode(text)}
-                        />
-                    </View>
-                    <View style={{marginTop:6}}>
-                        <CheckBox
-                            checkBoxColor={"#7D7C7C"}
-                            isChecked={privacyCheckBox}
-                            rightTextStyle={styles.checkBoxText}
-                            checkedCheckBoxColor={theme.color.primaryColor}
-                            rightText={"I agree with the Terms & Conditions"}
-                            onClick={() => setPrivacyCheckBox(!privacyCheckBox)}
-                        />
-                    </View>
-                </View>
-                <CustomButton
-                    loading={loader}
-                    title={"Sign Up"}
-                    activeOpacity={.7}
-                    onPress={createAccountHandle}
-                    customButtonStyle={{marginTop:25}}
-                />
-                <View style={{paddingHorizontal:27}}>
-                    <View style={{flexDirection:"row",alignSelf:"center",marginBottom:20}}>
-                        <View style={{justifyContent:"center"}}>
-                            <Text style={[styles.signInWithText,{textAlign:"right",paddingVertical:0}]}>
-                                Already have an account?
-                            </Text>
-                        </View>
-                        <TouchableOpacity
-                            activeOpacity={.8}
-                            style={{justifyContent:"center"}}
-                            onPress={() => navigation.navigate("Login",{
-                                routeName: "signup",
-                            })}>
-                            <Text style={[styles.signUpText,{paddingVertical:0}]}>  Sign In Here</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </ScrollView>
-            <CountryPicker
-                show={show}
-                style={{modal:{height:500}}}
-                onBackdropPress={() => setShow(false)}
-                pickerButtonOnPress={(item) => {
-                    console.log(item);
-                    setCountryFlag(item?.flag);
-                    setCountryCode(item?.dial_code);
-                    setShow(false);
-                }}
-            />
-        </KeyboardAvoidingView>
-    )
-}
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: theme.color.secondaryColor,
-    },
-    logo: {
-        gap: 10,
-        width: "100%",
-        height: "auto",
-        display: "flex",
-        paddingBottom: 20,
-        alignItems: "center",
-        flexDirection: "row",
-        justifyContent: "center",
-        marginTop: 100,
-    },
-    LogoText: {
-        fontSize: 26,
-        color: theme.color.primaryColor,
-        fontWeight: "600",
-    },
-    logoStyle: {
-        width: 40,
-        height: 40,
-        marginTop: 93,
-        alignSelf: "center",
-        marginBottom: 23.55,
-        resizeMode: "contain",
-    },
-    signInHeading: {
-        fontSize: 24,
-        textTransform: "uppercase",
-        color: theme.color.headingColor,
-        fontFamily: FontFamily.boldFont,
-    },
-    signInDetail: {
-        fontSize: 14,
-        color: theme.color.textColor,
-        fontFamily: FontFamily.regularFont,
-    },
-    labelStyle: {
-        fontSize: 12,
-        paddingBottom: 4,
-        textTransform: "capitalize",
-        color: theme.color.textColor,
-        fontFamily: FontFamily.boldFont,
-    },
-    toggleIcon: {
-        right: 12,
-        height: "100%",
-        position: "absolute",
-        justifyContent: "center",
-    },
-    checkBoxText: {
-        fontSize: 12,
-        color: theme.color.textColor,
-        fontFamily: FontFamily.lightFont,
-    },
-    forgotPassText: {
-        fontSize: 12,
-        color: theme.color.errorColor,
-        fontFamily: FontFamily.lightFont,
-    },
-    signInWithText: {
-        fontSize: 12,
-        textAlign: "center",
-        paddingVertical: 21,
-        color: theme.color.textColor,
-        fontFamily: FontFamily.lightFont,
-    },
-    signUpText: {
-        fontSize: 12,
-        paddingBottom: 0,
-        textAlign: "left",
-        paddingVertical: 21,
-        color: theme.color.primaryColor,
-        fontFamily: FontFamily.boldFont,
-    },
-    socialBox: {
-        padding: 8,
-        width: "auto",
-        elevation: 10,
-        borderRadius: 5,
-        shadowRadius: 6.27,
-        shadowOpacity: 0.34,
-        alignSelf:"flex-end",
-        backgroundColor: "#FFF",
-        shadowOffset: {width: 0,height:5},
-        shadowColor: "rgba(0, 0, 0, 0.05)",
-    },
-    socialImageStyle: {
-        width: 24,
-        height: 24,
-        resizeMode: "contain",
-    },
-    countryCodeStyle: {
-        marginTop: 19.5,
-        paddingRight: 12,
-        paddingBottom: 14,
-        borderBottomWidth: .8,
-        borderBottomColor: "gray",
-        backgroundColor: 'transparent',
+          });
+      }
+    } catch (error) {
+      setLoader(false);
+      ToastMessage(error?.message);
     }
-});
+  };
+
+  return (
+    <ImageBackground 
+    source={{uri:"https://t3.ftcdn.net/jpg/03/55/60/70/360_F_355607062_zYMS8jaz4SfoykpWz5oViRVKL32IabTP.jpg"}}  // Add your background image path here
+    style={styles.backgroundImage} 
+    resizeMode="cover"
+  >
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : null}
+    >
+     
+      <Text style={{
+        fontSize: 28,
+        fontWeight: "900",
+        color: theme.color.black,
+        textAlign: "left",
+        marginHorizontal:20,
+        marginVertical:10,
+      }}>
+        Create Account
+      </Text>
+      <Text style={{
+         fontSize: 15,
+         color: theme.color.black,
+         textAlign: "left",
+         fontWeight:"500",
+        color:theme.color.black,
+        marginHorizontal:20,
+
+      }}>
+        Create an account so you can expire all the existing News
+      </Text>
+      <ScrollView>
+        <View style={styles.logo}>
+           <View>
+           <View style={styles.avatarWrapper}>
+           <Avatar.Image
+              size={90}
+              
+              
+              source={
+                avatar
+                  ? { uri: avatar.uri }
+                  : require("../../assets/images/Profile_avatar_placeholder_large.png")
+              }
+              style={styles.avatar}
+            />
+            </View>
+
+           </View>
+       <View>
+       <TouchableOpacity style={{
+        backgroundColor:theme.color.black,
+        justifyContent:"center",
+        alignItems:"center",
+        width:140,
+        height:40,
+        borderRadius:20,
+       }} onPress={pickImage}>
+              <Text style={styles.changeAvatarText}>Upload Profile</Text>
+            </TouchableOpacity>
+       </View>
+        </View>
+        <View style={{ paddingHorizontal: 27, marginTop: 15 }}>
+          
+        <TextInput
+  value={firstName}
+  label="First Name"
+  
+  style={{ backgroundColor: theme.color.white ,fontSize:13 ,marginBottom:8 }}
+  outlineColor="black"           // Set the outline color to black
+  activeOutlineColor="black"      // Set the active outline color to black
+  theme={{
+    colors: {
+      text: theme.color.black,    // Set the input text color to black
+      primary: "black", 
+                // Set the label color to black
+    },
+  }}
+  onChangeText={(text) => setFirstName(text)}
+/>
+
+          <TextInput
+            value={lastName}
+            label={"Last Name"}
+            style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8 }}
+            outlineColor="black"           // Set the outline color to black
+            activeOutlineColor="black"      // Set the active outline color to black
+            theme={{
+              colors: {
+                text: theme.color.black,    // Set the input text color to black
+                primary: "black", 
+                          // Set the label color to black
+              },
+            }}
+            onChangeText={(text) => setLastName(text)}
+          />
+          <TextInput
+            value={userEmail}
+            style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8 }}
+            label={"Email"}
+            outlineColor="black"           // Set the outline color to black
+            activeOutlineColor="black"      // Set the active outline color to black
+            theme={{
+              colors: {
+                text: theme.color.black,    // Set the input text color to black
+                primary: "black", 
+                          // Set the label color to black
+              },
+            }}
+            onChangeText={(text) => setUserEmail(text)}
+          />
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+        <CountryPicker
+  countryCode={countryCode}
+  withFilter
+  withFlag
+  withCallingCode
+  withCallingCodeButton
+  withEmoji
+  onSelect={(country) => {
+    setCountryCode(country.cca2);
+    setCallingCode(country.callingCode[0]);
+  }}
+  containerButtonStyle={{
+    marginRight: 10,
+  
+
+  }}
+/>
+
+      <TextInput
+        value={userNumber}
+        keyboardType="number-pad"
+        label={"Phone"}
+        style={{
+          flex: 1,
+          backgroundColor: theme.color.white ,
+          marginBottom:8
+        }}
+        outlineColor="black"           // Set the outline color to black
+        activeOutlineColor="black"      // Set the active outline color to black
+        theme={{
+          colors: {
+            text: theme.color.black,    // Set the input text color to black
+            primary: "black", 
+                      // Set the label color to black
+          },
+        }}
+
+        onChangeText={(text) => setUserNumber(text)}
+      />
+    </View>
+      
+
+<View style={styles.passwordContainer}>
+              <TextInput
+              label={"Password"}
+              value={userPassword}
+                secureTextEntry={passwordToggle}
+                style={{
+                  flex: 1,
+                  backgroundColor: theme.color.white ,
+                  marginBottom:8
+                }}
+                outlineColor="black"           // Set the outline color to black
+                activeOutlineColor="black"      // Set the active outline color to black
+                theme={{
+                  colors: {
+                    text: theme.color.black,    // Set the input text color to black
+                    primary: "black", 
+                              // Set the label color to black
+                  },
+                }}
+                   onChangeText={(text) => setUserPassword(text)}
+              />
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.togglePassword}
+                onPress={() => setPasswordToggle(!passwordToggle)} >
+                <Image
+                  style={styles.icon}
+                  source={passwordToggle ? require("../../assets/images/view.png") : require("../../assets/images/hide.png")}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.passwordContainer}>
+              <TextInput
+               value={confirmPassword}
+               label={"Confirm Password"}
+                secureTextEntry={passwordToggle}
+                style={{
+                  flex: 1,
+                  backgroundColor: theme.color.white ,
+                  marginBottom:8
+
+                }}
+                outlineColor="black"           // Set the outline color to black
+                activeOutlineColor="black"      // Set the active outline color to black
+                theme={{
+                  colors: {
+                    text: theme.color.black,    // Set the input text color to black
+                    primary: "black", 
+                              // Set the label color to black
+                  },
+                }}
+                
+                onChangeText={(text) => setConfirmPassword(text)}
+              />
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.togglePassword}
+                onPress={() => setPasswordToggle(!passwordToggle)} >
+                <Image
+                  style={styles.icon}
+                  source={passwordToggle ? require("../../assets/images/view.png") : require("../../assets/images/hide.png")}
+                />
+              </TouchableOpacity>
+            </View>
+       
+          <Text style={styles.iAmText}>I am a</Text>
+          <RadioButton.Group onValueChange={(value) => setRole(value)} value={role}>
+            <View style={styles.radioButtonRow}>
+              <View style={styles.radioButtonContainer}>
+                <RadioButton value="user" />
+                <Text style={styles.radioLabel}>Visitor</Text>
+              </View>
+              <View style={styles.radioButtonContainer}>
+                <RadioButton value="author" />
+                <Text style={styles.radioLabel}>Author</Text>
+              </View>
+            </View>
+          </RadioButton.Group>
+          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+            <Text style={styles.loginText}>Already have an account? Login</Text>
+          </TouchableOpacity>
+          <CustomButton
+            loading={loader}
+            title={"Sign Up"}
+            customButtonStyle={{ marginTop: 25, backgroundColor: theme.color.primaryColor }}
+            onPress={createAccountHandle}
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+</ImageBackground>
+  );
+};
 
 export default SignUp;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.color.backgroundColor,
+  },
+  backgroundImage: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  logo: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+    flexDirection:"row",
+    marginHorizontal:20,
+    gap:20,
+    alignItems:"center",
+    justifyContent:"center"
+  },
+  avatar: {
+    alignSelf: "center",
+    backgroundColor: "lightgrey",
+
+
+
+  },
+  passwordContainer: {
+    position: "relative",
+  },
+  togglePassword: {
+    position: "absolute",
+    right: 10,
+    top: 20,
+  },
+  icon: {
+    height: 20,
+    width: 20,
+    tintColor: "#000",
+  },
+  avatarWrapper: {
+    alignSelf: "center", // Centers the avatar horizontally
+    backgroundColor: "lightgrey", // Background color for the avatar wrapper
+    borderRadius: 60, // Make the border circular (half of size 120)
+    borderColor: theme.color.primaryColor, // Border color
+    borderWidth: 2, // Border thickness
+    borderStyle: "solid", // Solid border style
+    overflow: "hidden", // Ensures the image doesn't overflow the border
+  },
+  changeAvatarText: {
+    textAlign: "center",
+    color: theme.color.white,
+  },
+  iAmText: {
+    fontWeight: "bold",
+    color: theme.color.black,
+    fontSize: 16,
+    marginTop: 20,
+    textAlign:"center"
+  },
+  radioButtonRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+    gap:10,
+  },
+  radioButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  radioLabel: {
+    color: theme.color.black,
+  },
+  loginText: {
+    marginTop: 15,
+    color: theme.color.black,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+});

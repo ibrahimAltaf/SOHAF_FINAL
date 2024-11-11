@@ -1,325 +1,466 @@
-import React, {useEffect, useState} from "react";
-import {StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform, KeyboardAvoidingView} from "react-native";
-import {theme} from "../constants/styles";
-import {TextInput} from 'react-native-paper';
-import {FontFamily} from "../constants/fonts";
-import {useDispatch, useSelector} from "react-redux";
-import {useNavigation} from '@react-navigation/native';
-import {ToastMessage, helpers} from "../utils/helpers";
-import {CountryPicker} from 'react-native-country-codes-picker';
-import {SetUserDetail, SetUserToken} from "../Redux/actions/actions";
-import Loader from "../component/Loader/loader";
-import Header from "../component/Header/header";
-import CustomButton from "../component/Buttons/customButton";
-import CustomStatusBar from "../component/StatusBar/customStatusBar";
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Alert, ActivityIndicator, ToastAndroid } from 'react-native';
+import axios from 'axios';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { theme } from '../constants/styles';
+import Header from '../component/Header/header';
+import { useNavigation } from '@react-navigation/native';
+import { TextInput, useTheme } from 'react-native-paper';
+import AdminBottom from './AdminBottom';
+import { FontFamily } from '../constants/fonts';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch, useSelector } from "react-redux";
+import { SetUserDetail, SetUserToken } from "../Redux/actions/actions";
+export default function Profile(props) {
+  const { colors, dark } = useTheme();
+  const [activeTab, setActiveTab] = useState('profile');
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const [profile, setProfile] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    avatar: '',
+  });
 
-const Profile = () => {
-    const dispatch = useDispatch();
-    const navigation = useNavigation();
-    const {access_token} = useSelector((state) => state.userReducer);
-    const [loader, setLoader] = useState(true)
-    const [lastName, setLastName] = useState("")
-    const [firstName, setFirstName] = useState("");
-    const [userEmail, setUserEmail] = useState("");
-    const [userNumber, setUserNumber] = useState("");
-    const [showPicker, setShowPicker] = useState(false);
-    const [countryCode, setCountryCode] = useState("+1");
-    const [countryFlag, setCountryFlag] = useState("🇺🇸");
-    const [buttonLoader, setButtonLoader] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
-    useEffect(() => {
-        checkLoginStatus();
-    }, []);
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-          checkLoginStatus();
+  // State for password fields and visibility toggles
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { access_token ,user_detail } = useSelector((state) => state.userReducer);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('https://dodgerblue-chinchilla-339711.hostingersite.com/api/profile/1/admin');
+        const { profile } = response.data;
+        setProfile({
+          name: profile.name,
+          email: profile.email,
+          phone: profile.phone,
+          avatar: profile.avatar,
         });
-    
-        return unsubscribe;
-      }, [navigation]);
-    const checkLoginStatus = () => {
-        if (access_token===null) {
-          navigation.navigate("Login", {
-            routeName: "profile"
-          });
-        } else {
-            getProfileHandle();
-        };
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-    const getProfileHandle = () => {
-        try {
-            setLoader(true);
-            const myHeaders = new Headers();
-            myHeaders.append("X-Requested-With", "XMLHttpRequest");
-            myHeaders.append("Authorization", `Bearer ${access_token}`);
-            
-            const requestOptions = {
-                method: "GET",
-                headers: myHeaders,
-                redirect: "follow",
-            };
-            
-            fetch(`${helpers.api.baseUrl}details`, requestOptions)
-            .then((response) => response.json())
-            .then((result) => {
-                setLoader(false);
-                if (result?.message==="Unauthenticated.") {
-                    logoutHandle();
-                } else {
-                    if (result?.first_name!==undefined) {
-                        setFirstName(result?.first_name);
-                        setLastName(result?.last_name);
-                        setUserEmail(result?.email);
-                        const number = removeCountryCode(result?.mobile);
-                        setUserNumber(number);
-                        setCountryCode(result?.country_code);
-                        setCountryFlag(result?.country_flag);
-                    };
-                };
-            }).catch((error) => {
-                setLoader(false);
-                console.log(error?.message);
-            });
-        } catch (error) {
-            setLoader(false);
-            console.log(error?.message);
-        };
-    };
-    const removeCountryCode = (phoneNumber) => {
-        const countryCodePattern = /^\+?\d{1,4}/;
-        const strippedNumber = phoneNumber.replace(countryCodePattern, '');
-        return strippedNumber.trim();
-    };
-    const logoutHandle = () => {
-        try {
-            AsyncStorage.removeItem("access_token");
-            AsyncStorage.removeItem("user_location");
-            dispatch(SetUserDetail({}));
-            dispatch(SetUserToken(null));
-            alert("Session Expired!");
-            navigation.navigate("Login", {
-                routeName: "profile",
-            });
-        } catch (error) {
-            console.error("Error during logout:", error);
-        };
-    };
-    const profileUpdateHandle = () => {
-        try {
-            setButtonLoader(true);
-            const myHeaders = new Headers();
-            myHeaders.append("X-Requested-With", "XMLHttpRequest");
-            myHeaders.append("Authorization", `Bearer ${access_token}`);
-        
-            const formdata = new FormData();
-            formdata.append("email", userEmail);
-            formdata.append("mobile", userNumber);
-            formdata.append("last_name", lastName);
-            formdata.append("first_name", firstName);
-            formdata.append("country_code", countryCode);
-            formdata.append("country_flag", countryFlag);
+    fetchProfile();
+  }, []);
 
-            const requestOptions = {
-                method: "POST",
-                headers: myHeaders,
-                body: formdata,
-                redirect: "follow",
-            };
-
-            fetch(`${helpers.api.baseUrl}update/profile`, requestOptions)
-            .then((response) => response.json())
-            .then((result) => {
-                setButtonLoader(false);
-                if (result?.id!==undefined) {
-                    getProfileHandle();
-                    ToastMessage("Profile Updated Successfully!");
-                } else {
-                    ToastMessage("Profile Updated Failed!");
-                };
-                console.log("result =====> ", result);
-            }).catch((error) => {
-                setButtonLoader(false);
-                ToastMessage(error?.message);
-            });
-        } catch (error) {
-          setButtonLoader(false);
-          ToastMessage(error?.message);
-        };
-    };
+  const handleSaveChanges = async () => {
+    const formData = new FormData();
+    formData.append('name', profile.name);
+    formData.append('phone', profile.phone);
   
+    if (profile.avatar) {
+      const file = {
+        uri: profile.avatar,
+        name: 'avatar.jpg',
+        type: 'image/jpeg',
+      };
+      formData.append('avatar', file);
+    }
+  
+    try {
+      setLoading(true);
+      const response = await axios.post('https://dodgerblue-chinchilla-339711.hostingersite.com/api/profile/update/1/admin', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+  
+      if (response.data && response.data.success) {
+        setUpdateSuccess(true);
+        setTimeout(() => setUpdateSuccess(false), 3000);
+      } else {
+        ToastAndroid.show('Failed to update profile. Please try again.', ToastAndroid.LONG);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error.message);
+      ToastAndroid.show('Failed to update profile. Please try again.', ToastAndroid.LONG);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const pickImage = () => {
+    launchImageLibrary({ mediaType: 'photo', quality: 0.5 }, (response) => {
+      if (response.assets && response.assets.length > 0) {
+        setProfile({ ...profile, avatar: response.assets[0].uri });
+      }
+    });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear();
+      Alert.alert('Success', 'Logged out successfully!');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (error) {
+      console.error('Error clearing AsyncStorage:', error);
+      Alert.alert('Error', 'Failed to log out. Please try again.');
+    }
+  };
+
+  if (loading) {
     return (
-        <KeyboardAvoidingView style={styles.container}
-        behavior={Platform.OS==="ios"?"padding":null}>
-            {loader?<Loader />:null}
-            <CustomStatusBar
-                barStyle={"light-content"}
-                backgroundColor={"#044F86"}
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color={theme.color.primaryColor} />
+      </View>
+    );
+  }
+  const logoutHandle = async () => {
+    try {
+      if (!access_token) {
+        navigation.navigate("Login");
+      } else {
+        await AsyncStorage.removeItem("access_token");
+        await AsyncStorage.removeItem("user_detail");
+  
+        // Dispatch actions to clear Redux state
+        dispatch(SetUserDetail({}));
+        dispatch(SetUserToken(null));
+  
+        // Redirect to Login page and reset navigation stack
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+      Alert.alert('Error', 'Failed to log out. Please try again.');
+    }
+  };
+  
+  return (
+    <>
+      <Header title="Profile" backArrow backPage={() => props.navigation.goBack()} />
+      <View style={styles.container}>
+        <View style={styles.tabs}>
+          <TouchableOpacity
+            style={[styles.tabButton, activeTab === 'profile' && styles.activeTab]}
+            onPress={() => setActiveTab('profile')}
+          >
+            <Text style={styles.tabText}>Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tabButton, activeTab === 'changePassword' && styles.activeTab]}
+            onPress={() => setActiveTab('changePassword')}
+          >
+            <Text style={styles.tabText}>Change Password</Text>
+          </TouchableOpacity>
+        </View>
+
+        {activeTab === 'profile' ? (
+          <ScrollView contentContainerStyle={styles.profileContent}>
+            <TouchableOpacity onPress={pickImage} style={styles.avatarContainer}>
+              {profile.avatar ? (
+                <Image source={{ uri: profile.avatar }} style={styles.avatar} />
+              ) : (
+                <Text style={styles.imagePlaceholder}>Pick an Image</Text>
+              )}
+              {updateSuccess && (
+                <Image source={require("../assets/images/editing.png")} />
+              )}
+            </TouchableOpacity>
+            <TextInput
+              label="Name"
+              value={profile.name}
+              style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8,
+             width:"100%"
+               }}
+              onChangeText={(text) => setProfile({ ...profile, name: text })}
+              outlineColor="black"           // Set the outline color to black
+              activeOutlineColor="black"      // Set the active outline color to black
+              theme={{
+                colors: {
+                  text: theme.color.black,    // Set the input text color to black
+                  primary: "black", 
+                            // Set the label color to black
+                },
+              }}
+              placeholderTextColor={dark ? "#fff" : "#000"}
             />
-            <Header
-                backArrow={true}
-                title={"Profile"}
-                backPage={() => navigation.goBack()}
+            <TextInput
+              label="Email"
+              value={profile.email}
+              style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8,
+                width:"100%"
+                  }}
+              outlineColor="black"           // Set the outline color to black
+              activeOutlineColor="black"      // Set the active outline color to black
+              theme={{
+                colors: {
+                  text: theme.color.black,    // Set the input text color to black
+                  primary: "black", 
+                            // Set the label color to black
+                },
+              }}
+              editable={false}
+              placeholderTextColor={dark ? "#fff" : "#000"}
             />
-            <ScrollView>
-                <View style={{paddingHorizontal:27,marginTop:15}}>
-                    <View>
-                        <TextInput
-                            value={firstName}
-                            label={"First Name"}
-                            style={{backgroundColor:"transparent"}}
-                            onChangeText={(text) => setFirstName(text)}
-                        />
-                    </View>
-                    <View style={{marginTop:12}}>
-                        <TextInput
-                            value={lastName}
-                            label={"Last Name"}
-                            style={{backgroundColor:"transparent"}}
-                            onChangeText={(text) => setLastName(text)}
-                        />
-                    </View>
-                    <View style={{marginTop:12}}>
-                        <TextInput
-                            editable={false}
-                            value={userEmail}
-                            label={"Email Address"}
-                            style={{backgroundColor:"#EEE"}}
-                            onChangeText={(text) => setUserEmail(text)}
-                        />
-                    </View>
-                    <View style={{flexDirection:"row",marginTop:12}}>
-                        <View style={{justifyContent:"center"}}>
-                            <TouchableOpacity
-                                activeOpacity={.7}
-                                onPress={() => setShowPicker(true)}
-                                style={styles.countryCodeStyle}>
-                                <Text style={{color:'#000',fontSize:16}}>
-                                    {`${countryFlag}  ${countryCode}`}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={{flex:1,justifyContent:"center"}}>
-                            <TextInput
-                                value={userNumber}
-                                label={"Phone Number"}
-                                keyboardType={"number-pad"}
-                                style={{backgroundColor:"transparent"}}
-                                onChangeText={(text) => setUserNumber(text)}
-                            />
-                        </View>
-                    </View>
-                </View>
-                <CustomButton
-                    title={"Update"}
-                    activeOpacity={.7}
-                    loading={buttonLoader}
-                    onPress={profileUpdateHandle}
-                    customButtonStyle={{marginTop:20}}
-                />
-            </ScrollView>
-            <CountryPicker
-                show={showPicker}
-                style={{modal:{height:500}}}
-                onBackdropPress={() => setShowPicker(false)}
-                pickerButtonOnPress={(item) => {
-                    console.log(item);
-                    setCountryFlag(item?.flag);
-                    setCountryCode(item?.dial_code);
-                    setShowPicker(false);
+            <TextInput
+              label="Phone"
+              style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8,
+                width:"100%"
+                  }}
+              value={profile.phone}
+              onChangeText={(text) => setProfile({ ...profile, phone: text })}
+              outlineColor="black"           // Set the outline color to black
+              activeOutlineColor="black"      // Set the active outline color to black
+              theme={{
+                colors: {
+                  text: theme.color.black,    // Set the input text color to black
+                  primary: "black", 
+                            // Set the label color to black
+                },
+              }}
+              placeholderTextColor={dark ? "#fff" : "#000"}
+            />
+          </ScrollView>
+        ) : (
+          <ScrollView contentContainerStyle={styles.changePasswordContent}>
+            {/* Current Password */}
+            <View style={styles.passwordContainer}>
+              <TextInput
+                label="Current Password"
+                style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8,
+                  width:"100%"
+                    }}
+                value={currentPassword}
+                secureTextEntry={!showCurrentPassword}
+                outlineColor="black"           // Set the outline color to black
+                activeOutlineColor="black"      // Set the active outline color to black
+                theme={{
+                  colors: {
+                    text: theme.color.black,    // Set the input text color to black
+                    primary: "black", 
+                              // Set the label color to black
+                  },
+                  
                 }}
-            />
-        </KeyboardAvoidingView>
-    )
+                placeholderTextColor={dark ? "#fff" : "#000"}
+                onChangeText={setCurrentPassword}
+              />
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.togglePassword}
+                onPress={() => setShowCurrentPassword(!showCurrentPassword)} >
+                <Image
+                  style={styles.icon}
+                  source={showCurrentPassword ? require("../assets/images/hide.png") : require("../assets/images/view.png")}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* New Password */}
+            <View style={styles.passwordContainer}>
+              <TextInput
+                label="New Password"
+                value={newPassword}
+                secureTextEntry={!showNewPassword}
+                style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8,
+                  width:"100%"
+                    }}
+                outlineColor="black"           // Set the outline color to black
+                activeOutlineColor="black"      // Set the active outline color to black
+                theme={{
+                  colors: {
+                    text: theme.color.black,    // Set the input text color to black
+                    primary: "black", 
+                              // Set the label color to black
+                  },
+                }}
+                placeholderTextColor={dark ? "#fff" : "#000"}
+                onChangeText={setNewPassword}
+              />
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.togglePassword}
+                onPress={() => setShowNewPassword(!showNewPassword)} >
+                <Image
+                  style={styles.icon}
+                  source={showNewPassword ? require("../assets/images/hide.png") : require("../assets/images/view.png")}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Confirm New Password */}
+            <View style={styles.passwordContainer}>
+              <TextInput
+                label="Confirm New Password"
+                value={confirmNewPassword}
+                style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8,
+                  width:"100%"
+                    }}
+                secureTextEntry={!showConfirmPassword}
+                outlineColor="black"           // Set the outline color to black
+                activeOutlineColor="black"      // Set the active outline color to black
+                theme={{
+                  colors: {
+                    text: theme.color.black,    // Set the input text color to black
+                    primary: "black", 
+                              // Set the label color to black
+                  },
+                }}
+                placeholderTextColor={dark ? "#fff" : "#000"}
+                onChangeText={setConfirmNewPassword}
+              />
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.togglePassword}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)} >
+                <Image
+                  style={styles.icon}
+                  source={showConfirmPassword ? require("../assets/images/hide.png") : require("../assets/images/view.png")}
+                />
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        )}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
+            <Text style={styles.LOGINTEXT}>Save Changes</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={logoutHandle} style={styles.logoutButton}>
+            <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <AdminBottom/>
+    </>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: theme.color.secondaryColor,
-    },
-    logoStyle: {
-        width: 200,
-        height: 80,
-        marginTop: 93,
-        alignSelf: "center",
-        marginBottom: 23.55,
-        resizeMode: "contain",
-    },
-    signInHeading: {
-        fontSize: 24,
-        textTransform: "uppercase",
-        color: theme.color.headingColor,
-        fontFamily: FontFamily.boldFont,
-    },
-    signInDetail: {
-        fontSize: 14,
-        color: theme.color.textColor,
-        fontFamily: FontFamily.regularFont,
-    },
-    labelStyle: {
-        fontSize: 12,
-        paddingBottom: 4,
-        textTransform: "capitalize",
-        color: theme.color.textColor,
-        fontFamily: FontFamily.boldFont,
-    },
-    toggleIcon: {
-        right: 12,
-        height: "100%",
-        position: "absolute",
-        justifyContent: "center",
-    },
-    checkBoxText: {
-        fontSize: 12,
-        color: theme.color.textColor,
-        fontFamily: FontFamily.lightFont,
-    },
-    forgotPassText: {
-        fontSize: 12,
-        color: theme.color.errorColor,
-        fontFamily: FontFamily.lightFont,
-    },
-    signInWithText: {
-        fontSize: 12,
-        textAlign: "center",
-        paddingVertical: 21,
-        color: theme.color.textColor,
-        fontFamily: FontFamily.lightFont,
-    },
-    signUpText: {
-        fontSize: 12,
-        paddingBottom: 0,
-        textAlign: "left",
-        paddingVertical: 21,
-        color: theme.color.primaryColor,
-        fontFamily: FontFamily.boldFont,
-    },
-    socialBox: {
-        padding: 8,
-        width: "auto",
-        elevation: 10,
-        borderRadius: 5,
-        shadowRadius: 6.27,
-        shadowOpacity: 0.34,
-        alignSelf:"flex-end",
-        backgroundColor: "#FFF",
-        shadowOffset: {width: 0,height:5},
-        shadowColor: "rgba(0, 0, 0, 0.05)",
-    },
-    socialImageStyle: {
-        width: 24,
-        height: 24,
-        resizeMode: "contain",
-    },
-    countryCodeStyle: {
-        marginTop: 19.5,
-        paddingRight: 12,
-        paddingBottom: 14,
-        borderBottomWidth: .8,
-        borderBottomColor: "gray",
-        backgroundColor: 'transparent',
-    }
-});
+  container: {
+    flex: 1,
+    backgroundColor: theme.color.white,
+    paddingHorizontal: 15,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabs: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  tabButton: {
+    flex: 1,
+    padding: 12,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#ddd',
+  },
+  activeTab: {
+    borderBottomColor: theme.color.black,
+  },
+  tabText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: theme.color.black,
+  },
+  profileContent: {
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    position: 'relative',
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  buttonContainer: {
+ 
+    paddingBottom: 20,
+  },
+  saveButton: {
+    backgroundColor: theme.color.primaryColor,
+    height: 50,
+    elevation: 23,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 20,
+    shadowRadius: 15.19,
+    shadowOpacity: 0.57,
+    justifyContent: "center",
+    shadowOffset: {width:0,height:11},
+    shadowColor: "rgba(0, 0, 0, 0.05)",
+    borderColor: theme.color.primaryColor,
+    alignItems:"center"
 
-export default Profile;
+  },
+  logoutButton: {
+    backgroundColor: theme.color.black,
+    height: 50,
+    elevation: 23,
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 20,
+    shadowRadius: 15.19,
+    shadowOpacity: 0.57,
+    justifyContent: "center",
+    shadowOffset: {width:0,height:11},
+    shadowColor: "rgba(0, 0, 0, 0.05)",
+    borderColor: theme.color.primaryColor,
+    alignItems:"center"
+  },
+  buttonText: {
+    fontSize: 12,
+    fontWeight: "700",
+    textAlign: "center",
+    color: theme.color.white,
+    fontFamily: FontFamily.boldFont,
+ 
+  },
+  LOGINTEXT: {
+    fontSize: 12,
+    fontWeight: "700",
+    textAlign: "center",
+    color: theme.color.black,
+    fontFamily: FontFamily.boldFont,
+ 
+  },
+  imagePlaceholder: {
+    color: '#999',
+    marginBottom: 20,
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    tintColor: "#000",
+  },
+  passwordContainer: {
+    position: "relative",
+
+  },
+  togglePassword: {
+    position: "absolute",
+    right: 10,
+    top: 30,
+  },
+});

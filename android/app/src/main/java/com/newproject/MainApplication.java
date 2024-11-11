@@ -1,4 +1,4 @@
-package app.arbitech.com;
+package com.sohaf;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

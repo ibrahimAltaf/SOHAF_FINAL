@@ -3,7 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
-  TextInput,
+
   TouchableOpacity,
   Image,
   Modal,
@@ -12,6 +12,10 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ToastMessage, helpers } from '../../utils/helpers';
+import { theme } from '../../constants/styles';
+import { TextInput } from 'react-native-paper';
+import CustomButton from '../../component/Buttons/customButton';
+import { ImageBackground } from 'react-native';
 
 export default function ForgetPassword() {
   const navigation = useNavigation();
@@ -77,18 +81,19 @@ export default function ForgetPassword() {
   };
 
   return (
+ <>
+ <ImageBackground 
+        source={{uri:"https://t3.ftcdn.net/jpg/03/55/60/70/360_F_355607062_zYMS8jaz4SfoykpWz5oViRVKL32IabTP.jpg"}}  // Add your background image path here
+        style={styles.backgroundImage} 
+        resizeMode="cover"
+      >
     <View style={styles.container}>
-      {/* Placeholder for Logo */}
-      <View style={styles.logoContainer}>
-      <Image style={{
-            width:200,
-            height:100,
-            objectFit:"cover"
-          }} source={require("../../assets/images/newlogo.png")} />
-      </View>
+    <Text style={styles.heading}>Forgot Password</Text>
+    <Text style={styles.subText}>
+  Enter your email to receive password reset OTP.
+</Text>
 
-      {/* Screen Heading */}
-      <Text style={styles.heading}>Forget Password</Text>
+ 
 
       {/* Input Field for Email */}
       <TextInput
@@ -97,17 +102,20 @@ export default function ForgetPassword() {
         placeholderTextColor="#999999"
         keyboardType="email-address"
         value={email}
+        mode="outlined" 
+        outlineColor="#ffff"
+        activeOutlineColor="#0000"
         onChangeText={setEmail}
       />
 
       {/* Submit Button */}
-      <TouchableOpacity style={styles.button} onPress={resetPasswordHandle}>
-        {loader ? (
-          <ActivityIndicator color="#FFF" />
-        ) : (
-          <Text style={styles.buttonText}>Reset Password</Text>
-        )}
-      </TouchableOpacity>
+      <CustomButton
+            loading={loader}
+            title={"Send Code"}
+            activeOpacity={0.7}
+            onPress={handleSubmitCode}
+            customButtonStyle={styles.customButton}
+          />
 
       {/* Modal for Entering Code */}
       <Modal
@@ -132,20 +140,25 @@ export default function ForgetPassword() {
             <TouchableOpacity style={styles.button} onPress={handleSubmitCode}>
               <Text style={styles.buttonText}>Submit Code</Text>
             </TouchableOpacity>
+         
           </View>
         </View>
       </Modal>
     </View>
+    </ImageBackground>
+ </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F8FE',
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop:50,
     padding: 20,
+  },
+  backgroundImage: {
+    flex: 1,
+    justifyContent: "center",
   },
   logoContainer: {
     marginBottom: 30,
@@ -155,32 +168,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heading: {
-    fontSize: 24,
-    color: '#000000',
-    marginBottom: 20,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: "900",
+    color: theme.color.black,
+    textAlign: "left",
+  },
+  subText: {
+    fontSize: 15,
+    color: theme.color.black,
+    textAlign: "left",
+    marginBottom: 30,
+    fontWeight:"500"
   },
   input: {
-    width: '100%',
-    height: 50,
-    borderColor: '#a7a7a7',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
+    backgroundColor: "#fff",
     marginBottom: 20,
-    backgroundColor: '#FFF',
-    color: '#7D7C7C',
+    width:"100%"
   },
   button: {
     width: '100%',
     height: 50,
-    backgroundColor: '#0461a5',
+    backgroundColor: theme.color.primaryColor,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 8,
   },
   buttonText: {
-    color: '#FFF',
+    color: theme.color.black,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -207,5 +221,20 @@ const styles = StyleSheet.create({
     color: '#000000',
     marginBottom: 20,
     fontWeight: 'bold',
+  },
+  circle: {
+    width: 70,
+    height: 70,
+    backgroundColor: theme.color.primaryColor,
+    borderRadius: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dcText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: 'black',
+    textAlign: 'center',
+    lineHeight: 75,
   },
 });

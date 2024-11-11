@@ -1,4 +1,4 @@
-package app.arbitech.com;
+package com.sohaf;
 import android.os.Bundle;
 
 import com.facebook.react.ReactActivity;

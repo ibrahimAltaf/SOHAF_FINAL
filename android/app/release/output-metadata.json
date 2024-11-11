@@ -4,15 +4,15 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "app.arbitech.com",
+  "applicationId": "com.sohaf",
   "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 9,
-      "versionName": "1.0.9",
+      "versionCode": 14,
+      "versionName": "2.4",
       "outputFile": "app-release.apk"
     }
   ],

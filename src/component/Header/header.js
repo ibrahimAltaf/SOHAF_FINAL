@@ -22,7 +22,7 @@ const Header = (props) => {
                         style={styles.backIconMain}>
                         <Image
                             source={theme.images.leftArrow}
-                            style={{height:25,width:25,tintColor:"#FFF"}}
+                            style={{height:20,width:20,tintColor:theme.color.black}}
                         />
                     </TouchableOpacity>
                 :<View style={{flex:.5}}></View>}
@@ -37,7 +37,7 @@ const Header = (props) => {
                         onPress={cartPress}
                         style={[styles.backIconMain,{position:"relative"}]}>
                         <Image
-                            style={{height:25,width:25,tintColor:"#FFF"}}
+                            style={{height:25,width:25,tintColor:theme.color.black}}
                             source={require('../../assets/images/cart.png')}
                         />
                         <View style={styles.cartCircle}>
@@ -58,21 +58,26 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     headerMain: {
-        elevation: 6,
-        paddingTop: 40,
-        paddingBottom: 20,
+        
+        backgroundColor:theme.color.white,
         shadowRadius: 4.65,
         shadowColor: "#000",
         shadowOpacity: 0.27,
         paddingHorizontal: 24,
         shadowOffset: {width:0,height:3},
-        backgroundColor: theme.color.primaryColor,
+
+        justifyContent:"center",
+        alignItems:"center",
+        alignSelf:"center",
+        height:50,
+        padding:15
     },
     headerHeading: {
-        fontSize: 20,
+        fontSize: 14,
         textAlign: "center",
-        color: theme.color.white,
+        color: theme.color.black,
         textTransform: "capitalize",
+        fontWeight:"900"
     },
     cartCircle: {
         top: -8,

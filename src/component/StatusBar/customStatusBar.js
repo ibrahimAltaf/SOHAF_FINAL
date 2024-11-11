@@ -1,7 +1,7 @@
 import React from "react";
 import {View, SafeAreaView, StatusBar, StyleSheet} from "react-native";
 
-const STATUSBAR_HEIGHT = StatusBar.currentHeight*1;
+const STATUSBAR_HEIGHT = StatusBar.currentHeight;
 
 const CustomStatusBar = (props) => {
     const {backgroundColor, barStyle} = props;
@@ -21,7 +21,7 @@ const CustomStatusBar = (props) => {
 
 const styles = StyleSheet.create({
     statusBar: {
-        height: STATUSBAR_HEIGHT,
+        height: 10,
     },
 })
 

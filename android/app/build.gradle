@@ -74,13 +74,13 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "app.arbitech.com"
+    namespace "com.sohaf"
     defaultConfig {
-        applicationId "app.arbitech.com"
+        applicationId "com.sohaf"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 11
-        versionName "2.1"
+        versionCode 14
+        versionName "2.4"
 
         // Add cppFlags to enable C++20
         externalNativeBuild {
@@ -98,10 +98,10 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file('arbeittech.keystore')
-            storePassword 'arbeittech123@'
+            storeFile file('My Denzen.keystore')
+            storePassword 'My Denzen123@'
             keyAlias 'arbitech_key_alias'
-            keyPassword 'arbeittech123@'
+            keyPassword 'My Denzen123@'
         }
     }
 
@@ -122,11 +122,11 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-    
+    implementation platform('com.google.firebase:firebase-bom:33.5.1')
     implementation 'com.google.android.gms:play-services-base:18.0.1'
-    implementation 'com.google.android.gms:play-services-location:19.0.1'
-    implementation 'com.google.android.gms:play-services-maps:18.0.2'
-
+ implementation 'com.google.android.gms:play-services-location:21.0.1'
+implementation 'com.google.android.gms:play-services-maps:18.0.2'
+implementation 'com.google.firebase:firebase-analytics'
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
         exclude group:'com.squareup.okhttp3', module:'okhttp'

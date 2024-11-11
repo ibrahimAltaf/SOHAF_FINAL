@@ -5,45 +5,50 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Splash from '../screen/splash';
 import Login from '../screen/Auth/login';
 import SignUp from '../screen/Auth/signUp';
-import SelectLocation from '../screen/selectLocation';
-import AllCategories from '../screen/allCategories';
-import Services from '../screen/services';
-import ServiceDetail from '../screen/serviceDetail';
-import CheckOut from '../screen/checkOut';
-import BookingDetail from '../screen/bookingDetail';
+
+
+
+
+
 import BottomTabNavigator from './RootNavigation';
-import Settings from '../screen/settings';
-import ServiceAreas from '../screen/serviceAreas';
-import PrivacyPolicy from '../screen/privacyPolicy';
-import AboutUs from '../screen/aboutUs';
-import Wallet from '../screen/wallet';
-import RefundPolicy from '../screen/refundPolicy';
-import CashOut from '../screen/cashOut';
+
+
+
+
+
 import Profile from '../screen/profile';
-import ContactUs from '../screen/contactUs';
-import AddToCart from '../screen/AddToCart';
-import Booking from '../screen/Booking/Booking';
-import AssingedDetails from '../screen/Booking/AssingedDetails';
-import AcceptDetails from '../screen/Booking/AcceptDetails';
-import EditBooking from '../screen/Booking/EditBooking';
-import CompletedDetails from '../screen/Booking/CompletedDetails';
-import CheckListScreen from '../screen/Booking/CheckListScreen';
-import PendingDetails from '../screen/Booking/PendingDetails';
-import BookingTimeCounter from '../screen/Booking/BookingTimeCounter';
-import Chat from '../screen/Chat';
-import BookingSuccess from '../screen/BookingSuccess';
-import DateTime from '../screen/DateTime';
-import FinalCheckout from '../screen/FinalCheckout';
-import Languages from '../screen/Languages';
-import Coupons from '../screen/Coupons';
-import HelpSupport from '../screen/HelpSupport';
+
+
+
+
+
+
+
 import Forgettpassword from '../screen/Auth/Forgettpassword';
 import Notifiction from '../screen/Notifiction';
-import VerifyOtp from '../screen/Auth/VerifyOtp';
-import Inbox from '../screen/Inbox';
-import CancellationPolicy from '../screen/CancellationPolicy';
-import TermConditions from '../screen/TermConditions';
-import EditServiceDetail from '../screen/editServiceDetail';
+;
+
+import Admin from '../screen/Admin';
+import AuthorScreen from '../screen/AuthorScreen';
+import Visitor from '../screen/Visitor';
+import Live from '../screen/Live';
+import Post from '../screen/Post';
+import ShowPost from '../screen/ShowPost';
+import Approvels from '../screen/Approvels';
+import ApprovelView from '../screen/ApprovelView';
+import ApprovelConfirm from '../screen/ApprovelConfirm';
+import BlogList from '../screen/BlogList';
+import BlogDetail from '../screen/BlogDetail';
+import ChannelVideoScreen from '../screen/ChannelVideoScreen';
+import Allnews from '../screen/Allnews';
+import VisitorBlogs from '../screen/VisitorBlogs';
+import Subscribes from '../screen/Subscribes';
+import VisitorProfile from '../screen/VisitorProfile';
+import AuthorBlogView from '../screen/AuthorBlogView';
+import AddBlog from '../screen/AddBlog';
+import AllBlog from '../screen/AllBlog';
+import AuthorProfile from '../screen/AuthorProfile';
+import AuthorPending from '../screen/AuthorPending';
 
 const Stack = createNativeStackNavigator();
 
@@ -67,296 +72,21 @@ const MainNavigation = () => {
                 component={SignUp}
                 options={{headerShown:false}}
             />
-            <Stack.Screen
-                name="SelectLocation"
-                component={SelectLocation}
-                options={{headerShown:false}}
-            />
+         
             <Stack.Screen
                 name="BottomTabNavigator"
                 component={BottomTabNavigator}
                 options={{headerShown:false}}
             />
-            <Stack.Screen
-                name="AllCategories"
-                component={AllCategories}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="Services"
-                component={Services}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-              name="ServiceDetail"
-              component={ServiceDetail}
-              options={{headerShown:false}}
-            />
-            <Stack.Screen
-              name="EditServiceDetail"
-              component={EditServiceDetail}
-              options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="CheckOut"
-                component={CheckOut}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="Bookings"
-                component={Booking}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="BookingDetail"
-                component={BookingDetail}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="Settings"
-                component={Settings}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="ServiceAreas"
-                component={ServiceAreas}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="PrivacyPolicy"
-                component={PrivacyPolicy}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="RefundPolicy"
-                component={RefundPolicy}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="AboutUs"
-                component={AboutUs}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="Wallet"
-                component={Wallet}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="CashOut"
-                component={CashOut}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="Profile"
-                component={Profile}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-                name="ContactUs"
-                component={ContactUs}
-                options={{headerShown:false}}
-            />
-              <Stack.Screen
-                name="addtoCart"
-                component={AddToCart}
-                options={{headerShown:false}}
-            />
-            <Stack.Screen
-        name="Assigned Details"
-        component={AssingedDetails}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-            <Stack.Screen
-        name="Accept Booking"
-        component={AcceptDetails}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-
+         
+       
+       
+       
       
-              <Stack.Screen
-        name="Edit Booking"
-        component={EditBooking}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
         
-                    <Stack.Screen
-        name="Complete Details"
-        component={CompletedDetails}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-      <Stack.Screen
-        name="CheckListScreen"
-        component={CheckListScreen}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-              <Stack.Screen
-        name="Pending Details"
-        component={PendingDetails}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-          <Stack.Screen
-        name="Booking Period"
-        component={BookingTimeCounter}
-        options={{
-          headerShown: false,
-          headerTintColor: Colors.White,
-          headerTitleStyle: {fontFamily:Fonts.Bold},
-          headerStyle: {backgroundColor:Colors.Primary},
-        }}
-      />
-          <Stack.Screen
-        name="chat"
-        component={Chat}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-                <Stack.Screen
-        name="BookingSuccess"
-        component={BookingSuccess}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-              <Stack.Screen
-        name="SelectDateTime"
-        component={DateTime}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-          <Stack.Screen
-        name="FinalCheckout"
-        component={FinalCheckout}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-        <Stack.Screen
-        name="Langauges"
-        component={Languages}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-        <Stack.Screen
-        name="Coupons"
-        component={Coupons}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
-        <Stack.Screen
-        name="Help&Support"
-        component={HelpSupport}
-        options={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: Colors.Primary,
-          },
-          headerTintColor: Colors.White,
-          headerTitleStyle: {
-            fontFamily: Fonts.Bold,
-          },
-        }}
-      />
+
+   
+     
             <Stack.Screen
         name="ForgetPassword"
         component={Forgettpassword}
@@ -385,9 +115,56 @@ const MainNavigation = () => {
           },
         }}
       />
-        <Stack.Screen
-        name="VerifyOtp"
-        component={VerifyOtp}
+          <Stack.Screen
+        name="AllNews"
+        component={Allnews}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+      
+  
+        
+   
+      <Stack.Screen
+        name="AdminScreen"
+        component={Admin}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+      
+      <Stack.Screen
+        name="VisitorScreen"
+        component={Visitor}
         options={{
           headerShown: false,
           headerStyle: {
@@ -400,8 +177,8 @@ const MainNavigation = () => {
         }}
       />
           <Stack.Screen
-        name="Inbox"
-        component={Inbox}
+        name="AuthorScreen"
+        component={AuthorScreen}
         options={{
           headerShown: false,
           headerStyle: {
@@ -413,9 +190,9 @@ const MainNavigation = () => {
           },
         }}
       />
-            <Stack.Screen
-        name="CancellationPolicy"
-        component={CancellationPolicy}
+       <Stack.Screen
+        name="Visitor"
+        component={Visitor}
         options={{
           headerShown: false,
           headerStyle: {
@@ -427,9 +204,234 @@ const MainNavigation = () => {
           },
         }}
       />
-                <Stack.Screen
-        name="TermCondiotions"
-        component={TermConditions}
+       <Stack.Screen
+        name="Live"
+        component={Live}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+       <Stack.Screen
+        name="Post"
+        component={Post}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="ShowPost"
+        component={ShowPost}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+           <Stack.Screen
+        name="Aprrvoles"
+        component={Approvels}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+        <Stack.Screen
+        name="ApprovelView"
+        component={ApprovelView}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+       <Stack.Screen
+        name="ApprovelConfirm"
+        component={ApprovelConfirm}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+         <Stack.Screen
+        name="BlogList"
+        component={BlogList}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="BlogDetails"
+        component={BlogDetail}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+          <Stack.Screen
+        name="ChannelVideoScreen"
+        component={ChannelVideoScreen}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+         <Stack.Screen
+        name="VisitorBlog"
+        component={VisitorBlogs}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Subscribe"
+        component={Subscribes}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+      
+        <Stack.Screen
+        name="VisitorProfile"
+        component={VisitorProfile}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+              <Stack.Screen
+        name="AuthorBlogView"
+        component={AuthorBlogView}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+  <Stack.Screen
+        name="AddBlog"
+        component={AddBlog}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+        <Stack.Screen
+        name="AllBlogs"
+        component={AllBlog}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+         <Stack.Screen
+        name="AuthoProfile"
+        component={AuthorProfile}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+          <Stack.Screen
+        name="AuthorPending"
+        component={AuthorPending}
         options={{
           headerShown: false,
           headerStyle: {

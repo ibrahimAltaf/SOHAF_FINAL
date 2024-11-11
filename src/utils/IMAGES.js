@@ -16,7 +16,7 @@ export const IMAGES = {
     User: require("../assets/images/user_1077012.png"),
     Languages: require("../assets/images/foreign-language_8495095.png"),
     Inbox: require("../assets/images/inbox_5909196.png"),
-    AboutUS: require("../assets/images/about-us_7402597.png"),
+
     PrivacyPolicy: require("../assets/images/compliant_4252354.png"),
     Refund: require("../assets/images/trade_12463566.png"),
     Logout: require("../assets/images/logout_1828490.png"),

@@ -25,7 +25,7 @@ const VerifyOtp = (props) => {
       const otpCode = `${codeOne}${codeTwo}${codeThree}${code}`;
       setLoader(true);
       
-      const response = await axios.post("https://arbeittech.com/api/user/sentotp", {
+      const response = await axios.post("https://My Denzen.com/api/user/sentotp", {
         userId: routeData?.userId,
         otp: otpCode,
       });
@@ -94,7 +94,7 @@ const VerifyOtp = (props) => {
 
   return (
     <View style={styles.container}>
-      <CustomStatusBar barStyle={"light-content"} backgroundColor={Colors.Primary} />
+   
       <View style={styles.Main}>
         <View style={styles.logo}>
           <Image style={{

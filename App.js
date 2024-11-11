@@ -8,7 +8,6 @@ import {StripeProvider} from '@stripe/stripe-react-native';
 import MainNavigation from './src/Routes/MainNavigation';
 import VersionCheck from 'react-native-version-check';
 import FlashMessage from "react-native-flash-message";
-import UpdatePopUp from './src/component/UpdateApp/UpdatePopUp';
 
 export default function App() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -37,20 +36,12 @@ export default function App() {
   };
 
   return (
-    <StripeProvider
-      urlScheme={"your-url-scheme"}
-      publishableKey={helpers.api.publishableKey}
-      merchantIdentifier={helpers.api.merchantName}>
+
       <Provider store={Store}>
         <MainNavigation />
         <FlashMessage style={{marginBottom:20}} />
-        <UpdatePopUp
-          modalVisible={modalVisible}
-          currentVersion={currentVersion}
-          redirectToStore={redirectToStore}
-          toggleModal={() => setModalVisible(!modalVisible)}
-        />
+      
       </Provider>
-    </StripeProvider>
+
   );
 }

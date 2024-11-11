@@ -9,8 +9,8 @@ const LONGITUDE_DELTA = LATITUDE_DELTA*ASPECT_RATIO;
 const api = {
     clientId: '2',
     merchantName: 'Movit inc ',
-    webUrl: 'https://arbeittech.com/',
-    baseUrl: 'https://arbeittech.com/api/user/',
+    webUrl: 'https://My Denzen.com/',
+    baseUrl: 'https://My Denzen.com/api/user/',
     secretKey: 'sk_test_fKA8fpC5eiLSUxbDnoSj7fJH',
     mapKey: 'AIzaSyA0C1LPhGrh_jgCTNU0blCVCFfeJmRZCbo',
     publishableKey: 'pk_test_rsDVDj4AUNXV5ruetnRAtTPD',
@@ -24,7 +24,7 @@ const constant = {
     latitudeDelta: LATITUDE_DELTA,
     longitudeDelta: LONGITUDE_DELTA,
     appStoreLink: 'itms-apps://apps.apple.com/US/app/id123',
-    playStoreLink: 'https://play.google.com/store/apps/details?id=app.arbitech.com',
+    playStoreLink: 'https://play.google.com/store/apps/details?id=com.sohaf',
 };
 const ToastMessage = (message) => {
     showMessage({

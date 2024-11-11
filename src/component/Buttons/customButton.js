@@ -32,7 +32,6 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         shadowRadius: 15.19,
         shadowOpacity: 0.57,
-        marginHorizontal: 27,
         justifyContent: "center",
         shadowOffset: {width:0,height:11},
         shadowColor: "rgba(0, 0, 0, 0.05)",
@@ -43,7 +42,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: "700",
         textAlign: "center",
-        color: theme.color.white,
+        color: theme.color.black,
         fontFamily: FontFamily.boldFont,
     },
 })
