@@ -1,20 +1,20 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import Header from '../component/Header/header';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import { theme } from '../constants/styles';
-import { TextInput, useTheme } from 'react-native-paper';
+import { TextInput } from 'react-native-paper';
 import AdminBottom from './AdminBottom';
+import { useThemeContext } from '../../ThemeContext';
 
 export default function ApprovalView(props) {
   const route = useRoute();
   const { userId } = route.params || {};
   const navigation = useNavigation();
-  const { colors, dark } = useTheme();
+  const { isDarkMode } = useThemeContext(); // Dark mode from context
 
   const [user, setUser] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Fetch user data from the API
@@ -29,7 +29,7 @@ export default function ApprovalView(props) {
         } catch (error) {
           console.error('Error fetching user data:', error);
         } finally {
-          setLoading(false);
+          setLoading(false);  // Set loading to false when the data is fetched
         }
       };
       fetchUserData();
@@ -42,112 +42,91 @@ export default function ApprovalView(props) {
         `https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/authors/status/${userId}`,
         { status: 'approved' }
       );
-      
+
       setTimeout(() => {
-     
         navigation.goBack();
       }, 3000);
     } catch (error) {
       console.error('Error approving user:', error);
-      alert('Failed to approve user. Please try again.');
+      alert('فشل الموافقة على المستخدم. يرجى المحاولة مرة أخرى.');
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="xl" color={theme.color.black} />
-      </View>
-    );
-  }
-
-  if (!user) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>No user data found.</Text>
-      </View>
-    );
-  }
-
+  // Loader state: Show loader until data is fetched
   return (
     <>
-      <Header title="Approvals" backArrow backPage={() => props.navigation.goBack()} />
-
-      <View style={styles.container}>
-        <View style={styles.userCard}>
-          <Image source={{ uri: user.avatar }} style={styles.userImage} />
-          <View style={styles.userDetails}>
-            <TextInput
-              label="Name"
-              value={user.name}
-              mode="outlined"
-              outlineColor="#000"
-              activeOutlineColor="#000"
-              style={styles.input}
-              editable={false}
-              placeholderTextColor={dark ? "#fff" : "#000"}
-            />
-
-            <TextInput
-              label="Email"
-              value={user.email}
-              mode="outlined"
-              outlineColor="#000"
-              activeOutlineColor="#000"
-              style={styles.input}
-              editable={false}
-              placeholderTextColor={dark ? "#fff" : "#000"}
-            />
-
-            <TextInput
-              label="Phone"
-              value={user.phone || 'Not Available'}
-              mode="outlined"
-              outlineColor="#000"
-              activeOutlineColor="#000"
-              style={styles.input}
-              editable={false}
-              placeholderTextColor={dark ? "#fff" : "#000"}
-            />
-
-            <TextInput
-              label="Status"
-              value={user.status}
-              mode="outlined"
-              outlineColor="#000"
-              activeOutlineColor="#000"
-              style={styles.input}
-              editable={false}
-              placeholderTextColor={dark ? "#fff" : "#000"}
-            />
-          </View>
+      <Header title="الموافقات" backArrow backPage={() => props.navigation.goBack()} />
+      {loading ? (
+        <View style={[styles.loadingContainer, { backgroundColor: isDarkMode ? '#1E1E1E' : '#fff' }]} >
+          <ActivityIndicator size="large" color={theme.color.primaryColor} />
         </View>
+      ) : (
+        <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#fff' }]}>
+          <View style={[styles.userCard, { backgroundColor: isDarkMode ? '#333' : '#fff' }]}>
+            <Image source={{ uri: user.avatar }} style={styles.userImage} />
+            <View style={styles.userDetails}>
+              <TextInput
+                label="الاسم"
+                value={user.name}
+                mode="outlined"
+                outlineColor={isDarkMode ? '#777' : '#000'}
+                activeOutlineColor={isDarkMode ? '#fff' : '#000'}
+                style={[styles.input, { backgroundColor: isDarkMode ? '#444' : '#fff' }]}
+                labelStyle={{ color: isDarkMode ? '#fff' : '#000' }}
+                theme={{ colors: { text: isDarkMode ? '#fff' : '#000' }}} 
+                editable={false}
+                placeholderTextColor={isDarkMode ? "#bbb" : "#000"}
+              />
 
-        {user.status === 'pending' && (
-          <TouchableOpacity style={styles.approveButton} onPress={handleApprove}>
-            <Text style={styles.buttonText}>Approve</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+              <TextInput
+                label="البريد الإلكتروني"
+                value={user.email}
+                mode="outlined"
+                outlineColor={isDarkMode ? '#777' : '#000'}
+                activeOutlineColor={isDarkMode ? '#fff' : '#000'}
+                style={[styles.input, { backgroundColor: isDarkMode ? '#444' : '#fff' }]}
+                labelStyle={{ color: isDarkMode ? '#fff' : '#000' }}
+                theme={{ colors: { text: isDarkMode ? '#fff' : '#000' }}} 
+                editable={false}
+                placeholderTextColor={isDarkMode ? theme.color.white : "#000"}
+              />
 
-      <AdminBottom />
+              <TextInput
+                label="الهاتف"
+                value={user.phone || 'غير متوفر'}
+                mode="outlined"
+                outlineColor={isDarkMode ? '#777' : '#000'}
+                activeOutlineColor={isDarkMode ? '#fff' : '#000'}
+                style={[styles.input, { backgroundColor: isDarkMode ? '#444' : '#fff' }]}
+                labelStyle={{ color: isDarkMode ? '#fff' : '#000' }}
+                theme={{ colors: { text: isDarkMode ? '#fff' : '#000' }}} 
+                editable={false}
+                placeholderTextColor={isDarkMode ? "#bbb" : "#000"}
+              />
 
-      <Modal visible={modalVisible} transparent={true} animationType="fade">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>User Approved Successfully!</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => {
-                setModalVisible(false);
-                navigation.goBack();
-              }}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
+              <TextInput
+                label="الحالة"
+                value={user.status}
+                mode="outlined"
+                outlineColor={isDarkMode ? '#777' : '#000'}
+                activeOutlineColor={isDarkMode ? '#fff' : '#000'}
+                style={[styles.input, { backgroundColor: isDarkMode ? '#444' : '#fff' }]}
+                labelStyle={{ color: isDarkMode ? '#fff' : '#000' }}
+                theme={{ colors: { text: isDarkMode ? '#fff' : '#000' }}} 
+                editable={false}
+                placeholderTextColor={isDarkMode ? "#bbb" : "#000"}
+              />
+            </View>
+          </View>
+
+          {user.status === 'pending' && (
+            <TouchableOpacity style={[styles.approveButton, { backgroundColor: isDarkMode ? '#ff9800' : '#000' }]} onPress={handleApprove}>
+              <Text style={styles.buttonText}>موافقة</Text>
             </TouchableOpacity>
-          </View>
+          )}
         </View>
-      </Modal>
+      )}
+      <AdminBottom />
     </>
   );
 }
@@ -156,16 +135,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f8f9fa',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 18,
-    color: '#555',
   },
   userCard: {
     borderRadius: 10,
@@ -185,15 +159,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   input: {
-    backgroundColor: "#ffffff",
     borderRadius: 10,
     marginVertical: 10,
-    fontSize:12,
-    color:theme.color.black
-
+    fontSize: 14,
   },
   approveButton: {
-    backgroundColor: theme.color.black,
     borderRadius: 5,
     padding: 12,
     alignItems: 'center',
@@ -204,33 +174,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 12,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-    width: 300,
-  },
-  modalText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  closeButton: {
-    backgroundColor: '#28a745',
-    padding: 10,
-    borderRadius: 5,
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
   },
 });
+

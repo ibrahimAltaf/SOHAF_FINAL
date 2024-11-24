@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Colors, Fonts, IMAGES } from "../../utils/IMAGES";
 import axios from "axios";
 import CustomStatusBar from "../../component/StatusBar/customStatusBar";
+import { theme } from "../../constants/styles";
 
 const VerifyOtp = (props) => {
   const routeData = props.route.params;
@@ -93,56 +94,57 @@ const VerifyOtp = (props) => {
   };
 
   return (
-    <View style={styles.container}>
-   
-      <View style={styles.Main}>
-        <View style={styles.logo}>
-          <Image style={{
-            width:200,
-            height:100,
-            objectFit:"cover"
-          }} source={require("../../assets/images/newlogo.png")} />
-      
-        </View>
-        <View style={{ flexDirection: "row", marginHorizontal: 30 }}>
-          <TextInput
-            value={codeOne}
-            ref={ref_input1}
-            keyboardType={"phone-pad"}
-            style={[styles.customInputStyle, { marginLeft: 0 }]}
-            onChangeText={(code) => onChangeText("One", code)}
-          />
-          <TextInput
-            value={codeTwo}
-            ref={ref_input2}
-            keyboardType={"phone-pad"}
-            style={styles.customInputStyle}
-            onChangeText={(code) => onChangeText("Two", code)}
-          />
-          <TextInput
-            value={codeThree}
-            ref={ref_input3}
-            keyboardType={"phone-pad"}
-            style={styles.customInputStyle}
-            onChangeText={(code) => onChangeText("Three", code)}
-          />
-          <TextInput
-            value={codeFour}
-            ref={ref_input4}
-            keyboardType={"phone-pad"}
-            style={styles.customInputStyle}
-            onChangeText={(code) => onChangeText("Four", code)}
-          />
-        </View>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => verifyOTPHandle(codeFour)} style={styles.loginButton}>
-          {loader ? (
-            <ActivityIndicator color={"#FFF"} />
-          ) : (
-            <Text style={styles.buttonText}>Verify OTP</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+<View style={styles.container}>
+  <View style={styles.Main}>
+    <View style={styles.logo}>
+      <Image style={{
+        width: 200,
+        height: 100,
+        objectFit: "cover"
+      }} source={require("../../assets/images/newlogo.png")} />
     </View>
+
+    <View style={{ flexDirection: "row", marginHorizontal: 30 }}>
+      <TextInput
+        value={codeOne}
+        ref={ref_input1}
+        keyboardType={"phone-pad"}
+        style={[styles.customInputStyle, { marginLeft: 0 }]}
+        onChangeText={(code) => onChangeText("One", code)}
+      />
+      <TextInput
+        value={codeTwo}
+        ref={ref_input2}
+        keyboardType={"phone-pad"}
+        style={styles.customInputStyle}
+        onChangeText={(code) => onChangeText("Two", code)}
+      />
+      <TextInput
+        value={codeThree}
+        ref={ref_input3}
+        keyboardType={"phone-pad"}
+        style={styles.customInputStyle}
+        onChangeText={(code) => onChangeText("Three", code)}
+      />
+      <TextInput
+        value={codeFour}
+        ref={ref_input4}
+        keyboardType={"phone-pad"}
+        style={styles.customInputStyle}
+        onChangeText={(code) => onChangeText("Four", code)}
+      />
+    </View>
+
+    <TouchableOpacity activeOpacity={0.7} onPress={() => verifyOTPHandle(codeFour)} style={styles.loginButton}>
+      {loader ? (
+        <ActivityIndicator color={theme.color.primaryColor} />
+      ) : (
+        <Text style={styles.buttonText}>تأكيد رمز التحقق</Text>
+      )}
+    </TouchableOpacity>
+  </View>
+</View>
+
   );
 };
 

@@ -4,26 +4,30 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { TextInput } from 'react-native-paper';
-import { theme } from '../constants/styles';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import CustomButton from '../component/Buttons/customButton';
 import Header from '../component/Header/header';
+import { theme } from '../constants/styles';
+import { useThemeContext } from '../../ThemeContext';
 
 export default function CreateBlog(props) {
-  const { user_detail } = useSelector((state) => state.userReducer); // Get user details for ID
+  const { user_detail } = useSelector((state) => state.userReducer);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUri, setImageUri] = useState(null);
   const [loading, setLoading] = useState(false);
-  const bottomSheetRef = useRef(null); // Reference for RBSheet
+  const bottomSheetRef = useRef(null);
 
   const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const { isDarkMode, toggleTheme } = useThemeContext(); // Access dark mode and toggleTheme from context
 
-  const backgroundColor = isDarkMode ? theme.color.darkBackground : '#f5f5f5';
-  const textColor = isDarkMode ? theme.color.white : theme.color.black;
-
-  // Image Picker function
+  const backgroundColor = isDarkMode ? '#1E1E1E' : '#f5f5f5';
+  const textColor = isDarkMode ? '#FFFFFF' : theme.color.black;
+  const inputBackgroundColor = isDarkMode ? '#333333' : '#FFFFFF';
+  const buttonBackgroundColor = isDarkMode ? '#3A3A3A' : '#007BFF';
+  const placeholderTextColor = isDarkMode ? '#AAAAAA' : '#888888';
+  const borderColor = isDarkMode ? '#555555' : theme.color.black;
+  const placeholderColor = isDarkMode ? '#AAAAAA' : '#888888';
   const pickImage = () => {
     launchImageLibrary({ mediaType: 'photo' }, (response) => {
       if (response.didCancel) {
@@ -37,24 +41,23 @@ export default function CreateBlog(props) {
     });
   };
 
-  // Function to submit blog
   const submitBlog = async () => {
     if (!title || !description || !imageUri) {
-      ToastAndroid.show("Please fill all fields", ToastAndroid.SHORT);
+      ToastAndroid.show("من فضلك أكمل جميع الحقول", ToastAndroid.SHORT);
       return;
     }
 
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
-    formData.append('user_ki_id_i', user_detail.id); // User ID from Redux
+    formData.append('user_ki_id_i', user_detail.id);
     formData.append('image', {
       uri: imageUri,
       name: 'image.jpg',
       type: 'image/jpeg',
     });
 
-    setLoading(true); // Show loader
+    setLoading(true);
 
     try {
       const response = await axios.post(
@@ -64,59 +67,61 @@ export default function CreateBlog(props) {
       );
       ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
 
-      // Open the bottom sheet to show approval message
       bottomSheetRef.current.open();
 
-      // Clear all fields
       setTitle('');
       setDescription('');
       setImageUri(null);
     } catch (error) {
       console.error(error);
-      ToastAndroid.show("Error creating blog", ToastAndroid.SHORT);
+      ToastAndroid.show("حدث خطأ أثناء إنشاء المدونة", ToastAndroid.SHORT);
     } finally {
-      setLoading(false); // Hide loader
+      setLoading(false);
     }
   };
 
   return (
     <>
-      <Header title={"Add Blog"} backArrow backPage={() => props.navigation.goBack()} />
+      <Header title={"أضف مدونة"} backArrow backPage={() => props.navigation.goBack()} />
       <View style={[styles.container, { backgroundColor }]}>
-        <Text style={[styles.heading, { color: textColor }]}>Create new blog</Text>
+        {/* <Text style={[styles.heading, { color: textColor }]}>إنشاء مدونة جديدة</Text> */}
 
-        <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-          <Text style={[styles.uploadText, { color: isDarkMode ? theme.color.black : theme.color.black }]}>Upload Image</Text>
+        <TouchableOpacity style={[styles.imagePicker, { borderColor: textColor }]} onPress={pickImage}>
+          <Text style={[styles.uploadText, { color: textColor }]}>رفع صورة</Text>
           {imageUri && <Image source={{ uri: imageUri }} style={styles.imagePreview} />}
         </TouchableOpacity>
 
         <TextInput
-          label={"Title"}
+          label="العنوان"
           value={title}
           onChangeText={setTitle}
-          style={[styles.input, { backgroundColor: isDarkMode ? theme.color.darkInput : theme.color.white }]}
-          outlineColor={textColor}
-          activeOutlineColor={textColor}
+          style={[styles.input, { backgroundColor: inputBackgroundColor }]}
+          outlineColor={borderColor}
+          activeOutlineColor={borderColor}
+          textColor={isDarkMode ? theme.color.white :theme.color.black}
           theme={{
             colors: {
-              text: textColor,
-              primary: textColor,
+              text: isDarkMode ? theme.color.white :theme.color.black,
+              primary: borderColor,
+              placeholder: placeholderColor,
+              background: inputBackgroundColor,
             },
           }}
         />
         
         <TextInput
-          label={"Description"}
-          style={[
-            styles.input,
-            { height: 150, textAlignVertical: 'top', backgroundColor: isDarkMode ? theme.color.darkInput : theme.color.white },
-          ]}
-          outlineColor={textColor}
-          activeOutlineColor={textColor}
+          label="الوصف"
+          style={[styles.input, { height: 150, textAlignVertical: 'top', backgroundColor: inputBackgroundColor }]}
+          outlineColor={borderColor}
+          activeOutlineColor={borderColor}
+          textColor={isDarkMode ? theme.color.white :theme.color.black}
+
           theme={{
             colors: {
               text: textColor,
-              primary: textColor,
+              primary: borderColor,
+              placeholder: placeholderColor,
+              background: inputBackgroundColor,
             },
           }}
           value={description}
@@ -126,9 +131,10 @@ export default function CreateBlog(props) {
 
         <CustomButton
           loading={loading}
-          title="Submit Blog"
+          title="إرسال المدونة"
           onPress={submitBlog}
-          customButtonStyle={[styles.customButton, { backgroundColor: isDarkMode ? theme.color.darkPrimary : theme.color.primaryColor }]}
+          customButtonStyle={[styles.customButton, { backgroundColor: theme.color.primaryColor }]}
+          textColor={textColor}
         />
 
         {/* Bottom Sheet for Confirmation */}
@@ -141,6 +147,7 @@ export default function CreateBlog(props) {
               justifyContent: 'center',
               alignItems: 'center',
               padding: 20,
+              backgroundColor,
             },
           }}
         >
@@ -148,12 +155,12 @@ export default function CreateBlog(props) {
             source={{ uri: "https://cdni.iconscout.com/illustration/premium/thumb/entrepreneur-getting-business-approval-illustration-download-in-svg-png-gif-file-formats--like-logo-successful-idea-pack-people-illustrations-4010293.png?f=webp" }} 
             style={styles.sheetImage}
           />
-          <Text style={[styles.sheetText, { color: textColor }]}>Your blog has been submitted!</Text>
-          <Text style={[styles.sheetText, { color: textColor }]}>It will be reviewed by the admin for approval.</Text>
+          <Text style={[styles.sheetText, { color: textColor }]}>تم إرسال مدونتك بنجاح!</Text>
+          <Text style={[styles.sheetText, { color: textColor }]}>سيتم مراجعتها من قبل المسؤول للموافقة عليها.</Text>
           <CustomButton
-            title="Close"
+            title="إغلاق"
             onPress={() => bottomSheetRef.current.close()}
-            customButtonStyle={styles.closeButton}
+            customButtonStyle={[styles.closeButton, { backgroundColor: theme.color.primaryColor }]}
           />
         </RBSheet>
       </View>
@@ -180,15 +187,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 8,
+
     marginBottom: 10,
   },
   uploadText: {
     fontSize: 16,
-    color:theme.color.black,
-    fontWeight:"600"
-},
+    fontWeight: "600",
+  },
   imagePreview: {
     width: "100%",
     height: 200,
@@ -205,15 +211,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginVertical: 8,
-    fontWeight:"900"
+    fontWeight: "900",
   },
-
   closeButton: {
-    backgroundColor: theme.color.primaryColor,
     padding: 10,
     borderRadius: 8,
     marginTop: 15,
-    width:"100%",
-    color:"#ffff"
+    width: "100%",
   },
 });

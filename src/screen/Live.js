@@ -1,274 +1,300 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, SafeAreaView, Modal } from 'react-native';
-import { theme } from '../constants/styles';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  ScrollView,
+  TextInput,
+  FlatList,
+  Image,
+  ToastAndroid,
+  useColorScheme,
+} from "react-native";
+import { useSelector } from "react-redux";
+import axios from "axios";
+import RBSheet from "react-native-raw-bottom-sheet";
+import { theme } from "../constants/styles";
+import Header from "../component/Header/header";
+import { useNavigation } from "@react-navigation/native";
+import { useThemeContext } from "../../ThemeContext";
+import VisitorBottom from "./VisitorBottom";
 
-const channels = [
-  {
-    id: '1',
-    name: 'Saudi News',
-    logo: 'https://iconape.com/wp-content/png_logo_vector/%D8%B4%D8%B9%D8%A7%D8%B1-%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9.png',
-  },
-  {
-    id: '2',
-    name: 'Saudi 24 News',
-    logo: 'https://iconape.com/wp-content/png_logo_vector/%D8%B4%D8%B9%D8%A7%D8%B1-%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9.png',
-  },
-  // Add more channels here
-];
+export default function Live(props) {
+  const { user_detail, access_token } = useSelector((state) => state.userReducer);
+  const colorScheme = useColorScheme();
+  const { isDarkMode, toggleTheme } = useThemeContext(); // Access dark mode from context
 
-export default function Live() {
-    const navigation = useNavigation()
-  const [modalVisible, setModalVisible] = useState(false);
-  const [subscribedChannel, setSubscribedChannel] = useState('');
+  const [newsBlogs, setNewsBlogs] = useState([]);
+  const [otherBlogs, setOtherBlogs] = useState([]);
+  const [filteredNewsBlogs, setFilteredNewsBlogs] = useState([]);
+  const [filteredOtherBlogs, setFilteredOtherBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [activeTab, setActiveTab] = useState("news");
+  const [search, setSearch] = useState("");
 
-  const handleSubscribe = (channelName) => {
-    setSubscribedChannel(channelName);
-    setModalVisible(true);
+  const bottomSheetRef = useRef(null);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  const fetchBlogs = async () => {
+    try {
+      // Resetting the loading state before each API call
+      setLoading(true);
+  
+      // Fetching News Blogs from the first API
+      const newsResponse = await axios.get("https://dodgerblue-chinchilla-339711.hostingersite.com/api/visitor/blogs-url/1");
+      console.log("News Blogs:", newsResponse.data);
+      
+      // Checking if newsResponse data exists and is an array
+      if (newsResponse.data && Array.isArray(newsResponse.data)) {
+        setNewsBlogs(newsResponse.data);
+        setFilteredNewsBlogs(newsResponse.data.reverse()); // Reverse to show newest blogs first
+      } else {
+        console.log("No data returned from the News Blogs API");
+      }
+  
+      // Fetching Other Blogs from the second API
+      const otherResponse = await axios.get("https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/blogs/approved");
+      console.log("Other Blogs:", otherResponse.data);
+      
+      // Checking if otherResponse data exists and is an array
+      if (otherResponse.data && Array.isArray(otherResponse.data)) {
+        setOtherBlogs(otherResponse.data);
+        setFilteredOtherBlogs(otherResponse.data.reverse()); // Reverse to show newest blogs first
+      } else {
+        console.log("No data returned from the Other Blogs API");
+      }
+  
+      // Set loading to false after both API calls are complete
+      setLoading(false);
+    } catch (error) {
+      console.log("Error fetching blogs:", error);
+      ToastAndroid.show("فشل في تحميل المدونات", ToastAndroid.SHORT);
+      setLoading(false);
+    }
   };
 
-  const renderChannel = ({ item }) => (
-    <View style={styles.channelContainer}>
-      <Image source={{ uri: item.logo }} style={styles.logo} />
-      <View style={styles.infoContainer}>
-        <Text style={styles.channelName}>{item.name}</Text>
-        <TouchableOpacity style={styles.subscribeButton} onPress={() => handleSubscribe(item.name)}>
-          <Text style={styles.subscribeText}>Subscribe</Text>
-        </TouchableOpacity>
+  const handleSearch = (text) => {
+    setSearch(text);
+    if (activeTab === "news") {
+      if (text === "") {
+        setFilteredNewsBlogs(newsBlogs.reverse()); // Re-reverse back to original order if search is cleared
+      } else {
+        const filteredData = newsBlogs.filter((blog) =>
+          blog.name.toLowerCase().includes(text.toLowerCase())
+        );
+        setFilteredNewsBlogs(filteredData);
+      }
+    } else {
+      if (text === "") {
+        setFilteredOtherBlogs(otherBlogs.reverse());
+      } else {
+        const filteredData = otherBlogs.filter((blog) =>
+          blog.title.toLowerCase().includes(text.toLowerCase())
+        );
+        setFilteredOtherBlogs(filteredData);
+      }
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+
+  const renderBlog = ({ item }) => (
+    <TouchableOpacity
+    onPress={() => {
+      if (activeTab === "news") {
+        // Agar news tab active hai, toh BlogDetails screen pe navigate karenge
+        navigation.navigate("NewsBlogPage", { url: item.url })
+            } else {
+        // Agar other tab active hai, toh koi doosra screen navigate karenge (Example: OtherBlogDetails)
+        navigation.navigate("BlogDetails", { blog: item });
+      }
+    }}      style={[styles.blogCard, { backgroundColor: isDarkMode ? "#333" : "#fff" }]}
+    >
+      <Image source={{ uri: item.image || "https://via.placeholder.com/60" }} style={styles.blogImage} />
+      <View style={styles.blogInfo}>
+        <Text style={[styles.blogTitle, { color: isDarkMode ? "#fff" : "#333" }]}>
+          {item.title || item.name}
+        </Text>
+        <Text numberOfLines={2} style={[styles.blogDescription, { color: isDarkMode ? "#bbb" : "#666" }]}>
+          {item.description}
+        </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
+  const styles = getStyles(isDarkMode);
+
   return (
-    <SafeAreaView style={styles.safeContainer}>
+    <>
+      <Header title="المدونات" backArrow backPage={() => props.navigation.goBack()} />
       <View style={styles.container}>
-        <Text style={styles.headerText}>Live News Channels</Text>
-        <FlatList
-          data={channels}
-          keyExtractor={(item) => item.id}
-          renderItem={renderChannel}
-          contentContainerStyle={styles.listContainer}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            onPress={() => handleTabChange("news")}
+            style={[styles.tab, activeTab === "news" && styles.activeTab]}
+          >
+            <Text style={[styles.tabText, activeTab === "news" && styles.activeTabText]}>
+              المدونات الجديدة
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleTabChange("other")}
+            style={[styles.tab, activeTab === "other" && styles.activeTab]}
+          >
+            <Text style={[styles.tabText, activeTab === "other" && styles.activeTabText]}>
+              مدونات أخرى
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <TextInput
+          style={[styles.searchBar, { backgroundColor: isDarkMode ? "#333" : "#fff" }]}
+          placeholder="ابحث في المدونات..."
+          placeholderTextColor={isDarkMode ? "#aaa" : "#888"}
+          value={search}
+          onChangeText={handleSearch}
         />
 
-        {/* Modal for Subscription Confirmation */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalHeader}>Subscription Successful!</Text>
-              <Text style={styles.modalText}>You have successfully subscribed to {subscribedChannel}.</Text>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.modalButtonText}>OK</Text>
-              </TouchableOpacity>
-            </View>
+        {updating && <ActivityIndicator size="small" color="#FFD700" style={styles.updatingLoader} />}
+
+        {/* Loader should only affect the blog content */}
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color={theme.color.primaryColor} />
           </View>
-        </Modal>
+        ) : (
+          <ScrollView style={styles.scrollContainer}>
+            {activeTab === "news" && (
+              <FlatList
+                showsVerticalScrollIndicator={true}
+                data={filteredNewsBlogs}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderBlog}
+                ListEmptyComponent={<Text style={styles.noResults}>لا توجد مدونات جديدة.</Text>}
+              />
+            )}
+            {activeTab === "other" && (
+              <FlatList
+                showsVerticalScrollIndicator={true}
+                data={filteredOtherBlogs}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderBlog}
+                ListEmptyComponent={<Text style={styles.noResults}>لا توجد مدونات أخرى.</Text>}
+              />
+            )}
+          </ScrollView>
+        )}
+
+        <RBSheet
+          ref={bottomSheetRef}
+          height={200}
+          closeOnDragDown={true}
+          customStyles={{
+            container: {
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: isDarkMode ? "#333" : "#fff",
+            },
+          }}
+        >
+          <Text>يرجى تسجيل الدخول للاشتراك في المدونات</Text>
+        </RBSheet>
       </View>
-      <View style={styles.bottomNav}>
-        {/* Home */}
-        <TouchableOpacity onPress={()=>navigation.navigate("AdminScreen")} style={styles.navButton}>
-          <Image
-            source={require("../assets/images/home.png")}
-            style={styles.navIcon}
-          />
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-
-        {/* Live */}
-        <TouchableOpacity onPress={()=>navigation.navigate("Live")} style={styles.navButton}>
-          <Image
-            source={require("../assets/images/icons8-live-24.png")}
-            style={styles.navIcon}
-          />
-          <Text style={styles.navText}>LIVE</Text>
-        </TouchableOpacity>
-
-        {/* Floating Add Button */}
-        <TouchableOpacity style={styles.addPostButton}>
-          <Text style={styles.addPostText}>+</Text>
-        </TouchableOpacity>
-
-        {/* Posts */}
-        <TouchableOpacity onPress={()=>navigation.navigate("ShowPost")} style={styles.navButton}>
-          <Image
-            source={require("../assets/images/icons8-edit-property-24.png")}
-            style={styles.navIcon}
-          />
-          <Text style={styles.navText}>Posts</Text>
-        </TouchableOpacity>
-
-        {/* Profile */}
-        <TouchableOpacity style={styles.navButton}>
-          <Image
-            source={require("../assets/images/icons8-admin-settings-male-24.png")}
-            style={styles.navIcon}
-          />
-          <Text style={styles.navText}>Profile</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      <VisitorBottom />
+    </>
   );
 }
 
-const styles = StyleSheet.create({
-  safeContainer: {
-    flex: 1,
-    backgroundColor: '#f7f7f7',
-
-  },
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f7f7f7', // Light background for better contrast
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: theme.color.black, // Yellow for the header text
-    marginBottom: 20,
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  channelContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#2C3E50', // Dark background for each channel
-    padding: 15,
-    marginVertical: 10,
-    borderRadius: 15, // Rounded corners for modern design
-    alignItems: 'center',
-    elevation: 3, // Shadow effect
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-  },
-  logo: {
-    width: 50,
-    height: 50,
-    borderRadius: 25, // Circular logo
-    marginRight: 15,
-  },
-  infoContainer: {
-    flex: 1,
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
-  channelName: {
-    fontSize: 18,
-    color: '#fff', // White text on black background
-    fontWeight: '600',
-  },
-  subscribeButton: {
-    backgroundColor: '#F1C40F', // Yellow subscribe button
-    paddingVertical: 6,
-    paddingHorizontal: 16, // Sleek and modern button size
-    borderRadius: 20,
-    elevation: 2,
-  },
-  subscribeText: {
-    fontSize: 14,
-    color: '#2C3E50', // Black text inside the yellow button
-    fontWeight: '600',
-  },
-  // Modal Styles
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)', // Transparent background for modal
-  },
-  modalContent: {
-    width: 300,
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 20,
-    alignItems: 'center',
-    elevation: 5,
-  },
-  modalHeader: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    marginBottom: 10,
-  },
-  modalText: {
-    fontSize: 16,
-    color: '#2C3E50',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  modalButton: {
-    backgroundColor: '#F1C40F',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-  },
-  modalButtonText: {
-    fontSize: 16,
-    color: '#2C3E50',
-    fontWeight: 'bold',
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: theme.color.white, // White background for nav bar
-    paddingVertical: 10,
-    position:"absolute",
-    bottom:0,
-    width:"100%",
-    paddingHorizontal: 20,
-    borderTopLeftRadius: 25, // Rounded corners for modern look
-    borderTopRightRadius: 25,
-    elevation: 10, // Shadow effect for elevation
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 10,
-  },
-  navButton: {
-    alignItems: 'center',
-    width: 60,
-  },
-  navIcon: {
-    width: 28,
-    height: 28,
-    marginBottom: 5,
-  },
-  navText: {
-    fontSize: 12,
-    color: '#333', // Darker text for nav items
-    fontWeight: '600',
-  },
-  addPostButton: {
-    backgroundColor: theme.color.primaryColor, // Teal color for the floating button
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    bottom: 40,
-    left: '45%', // Center align
-    elevation: 10, // Floating effect with shadow
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 8,
-  },
-  addPostText: {
-    fontSize: 36,
-    color: '#fff',
-    fontWeight: 'bold',
-    marginTop: -5, // Fine-tune for perfect centering of "+"
-  },
-});
+const getStyles = (isDarkMode) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: isDarkMode ? "#121212" : "#f0f0f5",
+      paddingHorizontal: 10,
+    },
+    tabContainer: {
+      flexDirection: "row",
+      justifyContent: "center",
+      marginVertical: 12,
+      backgroundColor: isDarkMode ? "#333" : "#fff",
+      borderRadius: 8,
+      elevation: 2,
+    },
+    tab: {
+      flex: 1,
+      alignItems: "center",
+      paddingVertical: 10,
+      marginHorizontal: 4,
+      borderRadius: 8,
+    },
+    activeTab: {
+      backgroundColor: isDarkMode ? "#FFD700" : theme.color.primaryColor,
+    },
+    tabText: {
+      fontSize: 12,
+      color: isDarkMode ? "#bbb" : "#555",
+    },
+    activeTabText: {
+      color: isDarkMode ? "#000" : theme.color.black,
+    },
+    searchBar: {
+      borderRadius: 8,
+      paddingHorizontal: 15,
+      paddingVertical: 10,
+      fontSize: 16,
+      elevation: 4,
+      color: isDarkMode ? theme.color.white : theme.color.black,
+    },
+    blogCard: {
+      padding: 15,
+      marginVertical: 8,
+      borderRadius: 10,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    blogImage: {
+      width: 60,
+      height: 60,
+      borderRadius: 8,
+      marginRight: 15,
+      backgroundColor: "#e1e1e1",
+    },
+    blogInfo: {
+      flex: 1,
+    },
+    blogTitle: {
+      fontSize: 16,
+      fontWeight: "bold",
+      marginBottom: 5,
+    },
+    blogDescription: {
+      fontSize: 14,
+    },
+    noResults: {
+      textAlign: "center",
+      fontSize: 16,
+      color: theme.color.primaryColor,
+      paddingVertical: 20,
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    scrollContainer: {
+      paddingBottom: 60,
+    },
+    updatingLoader: {
+      marginTop: 20,
+    },
+  });

@@ -212,102 +212,105 @@ const Login = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : null}>
-      
-      {/* Wrap LinearGradient inside ImageBackground */}
-      <ImageBackground 
-        source={{uri:"https://t3.ftcdn.net/jpg/03/55/60/70/360_F_355607062_zYMS8jaz4SfoykpWz5oViRVKL32IabTP.jpg"}}  // Add your background image path here
-        style={styles.backgroundImage} 
-        resizeMode="cover"
-      >
-       
-        <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-          <View style={styles.formContainer}>
-            <Text style={styles.heading}>Login</Text>
-            <Text style={styles.subText}>
-              Welcome back! Please enter your email and password to continue.
-            </Text>
-         
+    style={styles.container}
+    behavior={Platform.OS === "ios" ? "padding" : null}
+  >
+    {/* Wrap LinearGradient inside ImageBackground */}
+    <ImageBackground 
+      source={{ uri: "https://t3.ftcdn.net/jpg/03/55/60/70/360_F_355607062_zYMS8jaz4SfoykpWz5oViRVKL32IabTP.jpg" }}
+      style={styles.backgroundImage} 
+      resizeMode="cover"
+    >
+      <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+        <View style={styles.formContainer}>
+          <Text style={styles.heading}>تسجيل الدخول</Text>
+          <Text style={styles.subText}>
+            مرحبًا بعودتك! الرجاء إدخال بريدك الإلكتروني وكلمة المرور للمتابعة.
+          </Text>
+  
+          <TextInput
+            label={"البريد الإلكتروني"}
+            value={userEmail}
+            style={{ backgroundColor: theme.color.white, fontSize: 13, marginBottom: 8 }}
+            outlineColor="black"
+            textColor={theme.color.black}
+
+            activeOutlineColor="black"
+            theme={{
+              colors: {
+                text: theme.color.black,
+                primary: "black",
+              },
+            }}
+            onChangeText={(text) => setUserEmail(text)}
+          />
+  
+          {/* Password Input */}
+          <View style={styles.passwordContainer}>
             <TextInput
-              label={"Email"}
-              value={userEmail}
-              style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8 }}
-              outlineColor="black"           // Set the outline color to black
-              activeOutlineColor="black"      // Set the active outline color to black
+              label={"كلمة المرور"}
+              value={userPassword}
+              secureTextEntry={passwordToggle}
+              style={{ backgroundColor: theme.color.white, fontSize: 13, marginBottom: 8 }}
+              outlineColor="black"
+              textColor={theme.color.black}
+
+              activeOutlineColor="black"
               theme={{
                 colors: {
-                  text: theme.color.black,    // Set the input text color to black
-                  primary: "black", 
-                            // Set the label color to black
+                  text: theme.color.black,
+                  primary: "black",
                 },
               }}
-              onChangeText={(text) => setUserEmail(text)}
+              onChangeText={(text) => setUserPassword(text)}
             />
-    
-            {/* Password Input */}
-            <View style={styles.passwordContainer}>
-              <TextInput
-                label={"Password"}
-                value={userPassword}
-                secureTextEntry={passwordToggle}
-                style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8 }}
-                outlineColor="black"           // Set the outline color to black
-                activeOutlineColor="black"      // Set the active outline color to black
-                theme={{
-                  colors: {
-                    text: theme.color.black,    // Set the input text color to black
-                    primary: "black", 
-                              // Set the label color to black
-                  },
-                }}
-                onChangeText={(text) => setUserPassword(text)}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.togglePassword}
+              onPress={() => setPasswordToggle(!passwordToggle)}
+            >
+              <Image
+                style={styles.icon}
+                source={passwordToggle ? require("../../assets/images/view.png") : require("../../assets/images/hide.png")}
               />
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.togglePassword}
-                onPress={() => setPasswordToggle(!passwordToggle)} >
-                <Image
-                  style={styles.icon}
-                  source={passwordToggle ? require("../../assets/images/view.png") : require("../../assets/images/hide.png")}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.forgotPasswordContainer}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => navigation.navigate("ForgetPassword")}>
-                <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-              </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           </View>
-
-          {/* Sign In Button */}
-          <CustomButton
-            loading={loader}
-            title={"Sign In"}
-            activeOpacity={0.7}
-            onPress={loginHandle}
-            customButtonStyle={styles.customButton}
-          />
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <View style={styles.footerTextContainer}>
-              <Text style={styles.footerText}>Don’t have an account?</Text>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => navigation.navigate("SignUp")}>
-                <Text style={styles.signUpText}> Sign Up Here</Text>
-              </TouchableOpacity>
-            </View>
+  
+          <View style={styles.forgotPasswordContainer}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("ForgetPassword")}
+            >
+              <Text style={styles.forgotPasswordText}>نسيت كلمة المرور؟</Text>
+            </TouchableOpacity>
           </View>
-
-         
-        </ScrollView>
-      </ImageBackground>
-    </KeyboardAvoidingView>
+        </View>
+  
+        {/* Sign In Button */}
+        <CustomButton
+          loading={loader}
+          title={"تسجيل الدخول"}
+          activeOpacity={0.7}
+          onPress={loginHandle}
+          customButtonStyle={styles.customButton}
+        />
+  
+        {/* Footer */}
+        <View style={styles.footer}>
+          <View style={styles.footerTextContainer}>
+            <Text style={styles.footerText}>ليس لديك حساب؟</Text>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("SignUp")}
+            >
+              <Text style={styles.signUpText}> قم بالتسجيل هنا</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </ImageBackground>
+  </KeyboardAvoidingView>
+  
   );
 };
 

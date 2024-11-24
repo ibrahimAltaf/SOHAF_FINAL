@@ -56,7 +56,7 @@ export default function AuthorBlogView(props) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="xl" color={theme.color.black} />
+        <ActivityIndicator size="xl" color={theme.color.primaryColor} />
       </View>
     );
   }

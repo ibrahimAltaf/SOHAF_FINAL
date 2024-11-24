@@ -1,281 +1,282 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, BackHandler } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  useColorScheme,
+} from "react-native";
 import { theme } from "../constants/styles";
 import axios from "axios";
-import CustomStatusBar from "../component/StatusBar/customStatusBar";
-import AdminBottom from "./AdminBottom";
-import YoutubePlayer from "react-native-youtube-iframe";
 import { useNavigation } from "@react-navigation/native";
-import { useSelector } from 'react-redux';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { useSelector } from "react-redux";
 import VisitorBottom from "./VisitorBottom";
+import { useThemeContext } from "../../ThemeContext";
+import Header from "../component/Header/header";
 
 export default function Visitor() {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
-  const [channels, setChannels] = useState([]);
+  const [subscribedChannels, setSubscribedChannels] = useState([]);
   const [blogs, setBlogs] = useState([]);
-  const { access_token, user_detail } = useSelector((state) => state.userReducer);
+  const [newsBlogs, setNewsBlogs] = useState([]);
+  const { access_token } = useSelector((state) => state.userReducer);
+  const colorScheme = useColorScheme();
+  const { isDarkMode, toggleTheme } = useThemeContext();
 
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [channels, blogsData, newsBlogsData] = await Promise.all([
+          fetchSubscribedChannels(),
+          fetchBlogs(),
+          fetchNewsBlogs(),
+        ]);
+        setSubscribedChannels(channels);
+        setBlogs(blogsData);
+        setNewsBlogs(newsBlogsData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Fetch subscribed channels
+  const fetchSubscribedChannels = async () => {
+    try {
+      const response = await axios.get(
+        "https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/channels"
+      );
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching channels:", error);
+      return [];
+    }
+  };
+
+  // Fetch approved blogs
+  const fetchBlogs = async () => {
+    try {
+      const response = await axios.get(
+        "https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/blogs/approved"
+      );
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+      return [];
+    }
+  };
+
+  // Fetch news blogs
+  const fetchNewsBlogs = async () => {
+    try {
+      const response = await axios.get(
+        "https://dodgerblue-chinchilla-339711.hostingersite.com/api/visitor/blogs-url/1"
+      );
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching news blogs:", error);
+      return [];
+    }
+  };
+
+  // Styles based on dark mode
+  const styles = getStyles(isDarkMode);
+
+  // Handle channel click
   const handleChannelPress = (channel) => {
     navigation.navigate("ChannelVideoScreen", { channel });
   };
 
-  const navigateToBlogDetail = (blog) => {
-    navigation.navigate('BlogDetails', { blog });
-  };
-
-  useEffect(() => {
-    fetchData();
-    const backAction = () => {
-      Alert.alert("Hold on!", "Are you sure you want to exit?", [
-        {
-          text: "Cancel",
-          onPress: () => null,
-          style: "cancel"
-        },
-        { text: "YES", onPress: () => BackHandler.exitApp() }
-      ]);
-      return true;
-    };
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      await Promise.all([FETCHCHANNELS(), GETBLOGS()]);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const FETCHCHANNELS = async () => {
-    const response = await axios.get("https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/channels");
-    setChannels(response.data);
-  };
-
-  const GETBLOGS = async () => {
-    const response = await axios.get("https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/blogs");
-    setBlogs(response.data);
-  };
-
-  const extractVideoId = (iframeLink) => {
-    const match = iframeLink.match(/embed\/([a-zA-Z0-9_-]+)/);
-    return match ? match[1] : null;
-  };
-
-  if (loading) {
-    return <ActivityIndicator size="large" color={theme.color.primaryColor} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />;
-  }
-
   return (
-    <>
-      {/* Header with User Image, Name, and Notification Icon */}
-      <View style={styles.headerContainer}>
-        {user_detail.avatar ? (
-          <Image source={{ uri: user_detail.avatar }} style={styles.userAvatar} />
-        ) : (
-          <View style={styles.placeholderAvatar} />
-        )}
-        <Text style={styles.userName}>{user_detail.name}</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Notification")}>
-          <Image style={{
-            width:25,
-            height:25,
-            objectFit:"contain",
-            tintColor:theme.color.black
-          }} source={require("../assets/images/Notificatio_icon.png")} />
-        </TouchableOpacity>
-      </View>
 
-      <View style={styles.liveHeader}>
-        <Text style={styles.liveText}>My Subscribe</Text>
-      </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.liveNewsContainer}>
-        {channels.map((channel, index) => (
-          <TouchableOpacity key={index} onPress={() => handleChannelPress(channel)}>
-            <View style={styles.logoWrapper}>
-              <Image source={{ uri: channel.image || "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/24/a7/72/24a77254-9002-9999-c101-081f662035e8/AppIcon-0-0-1x_U007emarketing-0-8-0-P3-85-220.png/1200x630wa.png" }} style={styles.logo} />
-              <Text style={styles.logoText}>{channel.title}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
 
-      <ScrollView>
-        <View style={styles.container}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Live News</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-            {channels.map((channel) => {
-              const videoId = extractVideoId(channel.link);
-              return (
-                <View key={channel.id} style={styles.videoWrapper}>
-                  <YoutubePlayer
-                    height={200}
-                    width={Dimensions.get("window").width * 0.8}
-                    videoId={videoId}
-                  />
-                </View>
-              );
-            })}
-          </ScrollView>
+<>
+<View style={styles.container}>
+<Header title="صُحف "  />
 
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Latest Blogs</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.blogContainer}>
-            {blogs.map((blog, index) => (
-              <TouchableOpacity key={index} style={styles.blogCard} onPress={() => navigateToBlogDetail(blog)}> 
-                <Image source={{ uri: blog.image }} style={styles.blogImage} />
-                <Text style={styles.blogTitle}>{blog.title}</Text>
-                <Text numberOfLines={2} style={styles.blogDescription}>{blog.description}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+      {/* Loading State */}
+      {loading ? (
+
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FFD700" />
         </View>
-      </ScrollView>
+      ) : (
+        <ScrollView contentContainerStyle={styles.contentContainer}>
+          {/* Live News Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>الأخبار المباشرة</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {subscribedChannels.length > 0 ? (
+                subscribedChannels.map((channel, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleChannelPress(channel)}
+                  >
+                    <View style={styles.channelItem}>
+                      <Image
+                        source={{
+                          uri: channel.image || "https://default-image-url.com",
+                        }}
+                        style={styles.channelLogo}
+                      />
+                      <Text style={styles.channelText}>{channel.title}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.emptyMessage}>لا توجد قنوات أخبار مباشرة.</Text>
+              )}
+            </ScrollView>
+          </View>
 
-      {/* Bottom Navigation */}
+          {/* News Blogs Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>مدونات الأخبار</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {newsBlogs.length > 0 ? (
+                newsBlogs.map((blog) => (
+                  <TouchableOpacity
+                    key={blog.id}
+                    style={styles.blogCard}
+                    onPress={() => navigation.navigate("NewsBlogPage", { url: blog.url })}
+                  >
+                    <Image
+                      source={{
+                        uri: blog.image || "https://default-image-url.com",
+                      }}
+                      style={styles.blogImage}
+                    />
+                    <Text style={styles.blogTitle}>{blog.name}</Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.emptyMessage}>لا توجد مدونات أخبار متاحة.</Text>
+              )}
+            </ScrollView>
+          </View>
+
+          {/* Latest Blogs Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>أحدث المدونات</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {
+                blogs.map((blog, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.blogCard}
+                    onPress={() => navigation.navigate("BlogDetails", { blog })}
+                  >
+                    <Image source={{ uri: blog.image }} style={styles.blogImage} />
+                    <Text style={styles.blogTitle}>{blog.title}</Text>
+                    <Text numberOfLines={2} style={styles.blogDescription}>
+                      {blog.description}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+         
+              }
+            </ScrollView>
+          </View>
+        </ScrollView>
+      )}
+
+      {/* Footer Section */}
       <VisitorBottom />
-    </>
+    </View>
+</>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f0f5',
-  },
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#fff',
-  },
-  userAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  placeholderAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ccc",
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.color.black,
-    flex: 1,
-    marginLeft: 10,
-  },
-  sectionHeader: {
-    marginHorizontal: 20,
-    marginTop: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: theme.color.black,
-  },
-  horizontalScroll: {
-    paddingLeft: 10,
-    paddingVertical: 10,
-  },
-  videoWrapper: {
-    width: Dimensions.get("window").width * 0.8,
-    marginRight: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
-    alignItems: 'center',
-  },
-  itemText: {
-    marginTop: 5,
-    fontSize: 12,
-    color: theme.color.black,
-    fontWeight: "600",
-  },
-  blogContainer: {
-    marginTop: 10,
-    paddingLeft: 10,
-    height: "auto",
-  },
-  blogCard: {
-    width: 220,
-    marginRight: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
-    padding: 10,
-    height: "auto",
-  },
-  blogImage: {
-    width: '100%',
-    height: 90,
-    borderRadius: 10,
-  },
-  blogTitle: {
-    fontSize: 14,
-    marginVertical: 5,
-    color: theme.color.black,
-    fontWeight: "600",
-  },
-  blogDescription: {
-    fontSize: 12,
-    color: theme.color.textColor,
-    marginVertical: 5,
-  },
-  loaderWrapper: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  liveHeader: {
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-  },
-  liveText: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: theme.color.black,
-  },
-  liveNewsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 5,
-    height: "auto",
-  },
-  logoWrapper: {
-    alignItems: 'center',
-    marginHorizontal: 10,
-  },
-  logo: {
-    width: 60,
-    height: 60,
-    borderRadius: 100,
-  },
-  logoText: {
-    color: "#ffff",
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginTop: 5,
-    backgroundColor: "red",
-    paddingHorizontal: 10,
-  },
-});
+// Styles based on dark mode
+const getStyles = (isDarkMode) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: isDarkMode ? theme.color.black : theme.color.white,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: isDarkMode ? theme.color.black : theme.color.white,
+    },
+    contentContainer: {
+      paddingHorizontal: 10,
+    },
+    section: {
+      paddingVertical: 15,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: isDarkMode ? "#fff" : theme.color.black,
+      marginBottom: 10,
+    },
+    channelItem: {
+      alignItems: "center",
+      marginHorizontal: 10,
+      backgroundColor: isDarkMode ? "#333" : theme.color.primaryColor,
+      borderRadius: 8,
+      padding: 10,
+      width: 80,
+      height: 100,
+    },
+    channelLogo: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+    },
+    channelText: {
+      marginTop: 5,
+      fontSize: 6,
+      color: isDarkMode ? "#fff" : "#000",
+      textAlign: "center",
+      fontWeight: "900",
+    },
+    blogCard: {
+      width: 220,
+      marginRight: 10,
+      padding: 15,  // Added some extra padding for better spacing
+      backgroundColor: isDarkMode ? "#333" : theme.color.white,
+      marginBottom:10,      
+      // Premium Box Shadow Styling
+      shadowColor: "#000",  // Dark shadow color for a clean, strong look
+      shadowOffset: { width: 0, height: 10 },  // Larger vertical offset for more elevation
+      shadowOpacity: 0.2,  // Slightly lower opacity for a soft but noticeable shadow
+      shadowRadius: 15,  // Larger blur radius for a smoother, more diffused shadow
+      borderRadius:10,
+      elevation: 8, // Ensures shadow appears on Android with a decent level of elevation
+    },
+    
+    blogImage: {
+      width: "100%",
+      height: 120,
+      borderRadius: 10,
+      marginBottom: 10,
+    },
+    blogTitle: {
+      fontSize: 14,
+      fontWeight: "bold",
+      color: isDarkMode ? "#fff" : theme.color.black,
+    },
+    blogDescription: {
+      fontSize: 12,
+      color: isDarkMode ? "#aaa" : theme.color.black,
+      marginTop: 5,
+    },
+    emptyMessage: {
+      fontSize: 14,
+      color: isDarkMode ? "#bbb" : "#555",
+      textAlign: "center",
+    },
+  });

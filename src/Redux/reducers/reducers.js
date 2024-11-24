@@ -7,7 +7,8 @@ import {
     SET_ORDER_DETAIL,
     SET_COUPON_DATA
 } from "../actions/actions";
-    
+import { TOGGLE_THEME } from "../actions/actions"; 
+
 const initialState = {
     access_token: null,
     user_detail: {},
@@ -15,8 +16,20 @@ const initialState = {
     cart_data: [],
     order_detail: {},
     coupon_detail: {},
+    isDarkMode: false,
 };
-    
+
+const themeReducer = (state = initialState, action) => {
+    switch (action.type) {
+      case TOGGLE_THEME:
+        return {
+          ...state,
+          isDarkMode: !state.isDarkMode,
+        };
+      default:
+        return state;
+    }
+  };
 function userReducer(state = initialState, action) {
     switch (action.type) {
         case SET_USER_TOKEN:

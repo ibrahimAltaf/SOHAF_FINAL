@@ -1,19 +1,32 @@
-import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ToastAndroid, Keyboard, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ToastAndroid, Keyboard, Alert, useColorScheme } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../component/Header/header';
-import { theme } from '../constants/styles';
-import { TextInput, useTheme, RadioButton } from 'react-native-paper';
+import { TextInput, RadioButton } from 'react-native-paper';
 import AdminBottom from './AdminBottom';
+import { theme } from '../constants/styles';
 import { FontFamily } from '../constants/fonts';
+import CustomButton from '../component/Buttons/customButton';
+import { useThemeContext } from '../../ThemeContext';
+import AuthorBottom from './AuthorBottom';
 
 export default function Post(props) {
   const navigation = useNavigation();
-  const { colors, dark } = useTheme();
   const [heading, setHeading] = useState('');
   const [description, setDescription] = useState('');
-  const [role, setRole] = useState('author'); // Default type is "author"
+  const [role, setRole] = useState('author');
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [loader, setLoader] = useState(false);
+
+  const colorScheme = useColorScheme();
+  const { isDarkMode, toggleTheme } = useThemeContext(); 
+  
+  const backgroundColor = isDarkMode ? '#1E1E1E' : theme.color.white;
+  const textColor = isDarkMode ? '#FFFFFF' : theme.color.black;
+  const inputBackgroundColor = isDarkMode ? '#333333' : theme.color.white;
+  const buttonBackgroundColor = isDarkMode ? '#3A3A3A' : theme.color.primaryColor;
+  const borderColor = isDarkMode ? '#555555' : theme.color.black;
+  const placeholderColor = isDarkMode ? '#AAAAAA' : '#888888';
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
@@ -27,107 +40,117 @@ export default function Post(props) {
 
   const handlePost = async () => {
     if (!heading || !description) {
-      Alert.alert("Required", "Please fill in all required fields.");
+      ToastAndroid.show("مطلوب", ToastAndroid.SHORT);
       return;
     }
-    
+  
     try {
+      const requestBody = {
+        type: role,
+        message: description,
+      };
+  
+      // Add `user_id` only when the role is not 'all'
+      if (role !== 'all') {
+        requestBody.user_id = 7; // Replace 7 with dynamic ID if needed
+      }
+  
       const response = await fetch("https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/send-notifictaion", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          type: role, // Notification type based on selected radio button
-          user_id: 7, // Replace with dynamic user_id if needed
-          message: description,
-        }),
+        body: JSON.stringify(requestBody),
       });
-
+  
       const result = await response.json();
       if (result.success) {
-        ToastAndroid.show("Notification created successfully!", ToastAndroid.SHORT);
+        ToastAndroid.show("تم إنشاء الإشعار بنجاح!", ToastAndroid.SHORT);
         navigation.navigate("AdminScreen");
       } else {
-        ToastAndroid.show("Error", result.message || 'An error occurred');
+        ToastAndroid.show(result.message || "حدث خطأ", ToastAndroid.SHORT);
       }
     } catch (error) {
-      console.error('Error posting data: ', error);
-      ToastAndroid.show('Error', 'An error occurred while sending the notification');
+      console.error('خطأ في إرسال البيانات: ', error);
+      ToastAndroid.show('حدث خطأ أثناء إرسال الإشعار', ToastAndroid.SHORT);
     }
   };
+  
 
   return (
     <>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <Header title="Notification" backArrow backPage={() => props.navigation.goBack()} />
-        <Text style={styles.heading}>Create Notification</Text>
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <Header title="الإشعار" backArrow backPage={() => props.navigation.goBack()} />
+        <Text style={[styles.heading, { color: textColor }]}>إنشاء إشعار</Text>
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
           <View style={styles.container}>
             <TextInput
-              label="Add Heading"
+              label="إضافة عنوان"
               value={heading}
               onChangeText={setHeading}
-              style={styles.input}
-              outlineColor="black"
-              activeOutlineColor="black"
+              style={[styles.input, { backgroundColor: inputBackgroundColor }]}
+              outlineColor={borderColor}
+              activeOutlineColor={borderColor}
               theme={{
                 colors: {
-                  text: theme.color.black,
-                  primary: "black",
+                  text: textColor,
+                  primary: borderColor,
+                  placeholder: placeholderColor,
+                  background: inputBackgroundColor,
                 },
               }}
-              placeholderTextColor={dark ? "#fff" : "#000"}
             />
 
             <TextInput
-              label="Description"
+              label="الوصف"
               value={description}
               onChangeText={setDescription}
-              style={styles.input}
-              outlineColor="black"
-              activeOutlineColor="black"
+              style={[styles.input, { backgroundColor: inputBackgroundColor, height: 100, textAlignVertical: 'top' }]}
+              outlineColor={borderColor}
+              activeOutlineColor={borderColor}
               theme={{
                 colors: {
-                  text: theme.color.black,
-                  primary: "black",
+                  text: textColor,
+                  primary: borderColor,
+                  placeholder: placeholderColor,
+                  background: inputBackgroundColor,
                 },
               }}
-              placeholderTextColor={dark ? "#fff" : "#000"}
               multiline
               numberOfLines={4}
             />
 
-            {/* Label for RadioButton group */}
-            <Text style={styles.radioGroupLabel}>Choose the group to receive this notification:</Text>
+            <Text style={[styles.radioGroupLabel, { color: textColor }]}>اختر المجموعة لتلقي هذا الإشعار:</Text>
             
-            {/* Radio buttons for selecting notification type */}
             <RadioButton.Group onValueChange={(value) => setRole(value)} value={role}>
               <View style={styles.radioButtonRow}>
                 <View style={styles.radioButtonContainer}>
-                  <RadioButton value="user" />
-                  <Text style={styles.radioLabel}>Visitor</Text>
+                  <RadioButton value="user" color={textColor} />
+                  <Text style={[styles.radioLabel, { color: textColor }]}>زائر</Text>
                 </View>
                 <View style={styles.radioButtonContainer}>
-                  <RadioButton value="author" />
-                  <Text style={styles.radioLabel}>Author</Text>
+                  <RadioButton value="author" color={textColor} />
+                  <Text style={[styles.radioLabel, { color: textColor }]}>مؤلف</Text>
                 </View>
                 <View style={styles.radioButtonContainer}>
-                  <RadioButton value="all" />
-                  <Text style={styles.radioLabel}>All</Text>
+                  <RadioButton value="all" color={textColor} />
+                  <Text style={[styles.radioLabel, { color: textColor }]}>الجميع</Text>
                 </View>
               </View>
             </RadioButton.Group>
+               <CustomButton
+          loading={loader}
+          title={"إنشاء إشعار"}
+          activeOpacity={0.7}
+          onPress={handlePost}
+          customButtonStyle={styles.customButton}
+        />
+  
           </View>
         </ScrollView>
 
-        <TouchableOpacity style={styles.postButton} onPress={handlePost}>
-          <Text style={styles.buttonText}>Create Notification</Text>
-        </TouchableOpacity>
-
+        
+     
         {!isKeyboardVisible && <AdminBottom />}
       </KeyboardAvoidingView>
     </>
@@ -141,26 +164,28 @@ const styles = StyleSheet.create({
   },
   container: {
     alignItems: 'center',
-    justifyContent:"center"
+    justifyContent: "center",
   },
   input: {
-    backgroundColor: theme.color.white,
     fontSize: 13,
     marginBottom: 8,
     width: "100%",
   },
   radioGroupLabel: {
-    fontSize: 15, // Slightly larger font size for readability
+    fontSize: 15,
     fontWeight: '500',
     marginTop: 15,
     marginBottom: 5,
-    color: theme.color.black,
   },
   radioButtonRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     marginVertical: 10,
+  },
+  customButton: {
+    marginTop: 30,
+    width:"100%"
   },
   radioButtonContainer: {
     flexDirection: 'row',
@@ -175,7 +200,7 @@ const styles = StyleSheet.create({
     elevation: 23,
     borderWidth: 1,
     borderRadius: 10,
-    margin: 20, // Added margin to position the button at the bottom
+    margin: 20,
     shadowRadius: 15.19,
     shadowOpacity: 0.57,
     justifyContent: "center",
@@ -183,22 +208,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 11 },
     shadowColor: "rgba(0, 0, 0, 0.05)",
     borderColor: theme.color.primaryColor,
-    backgroundColor: theme.color.primaryColor,
-    width: "90%", // Slightly reduced width for aesthetic alignment
+    width: "90%",
     alignSelf: 'center',
   },
   buttonText: {
     fontSize: 14,
     fontWeight: "700",
     textAlign: "center",
-    color: theme.color.black, // Updated to white for better contrast
     fontFamily: FontFamily.boldFont,
   },
   heading: {
     fontSize: 28,
     fontWeight: "900",
-    color: theme.color.black,
-    textAlign: "left",
-    margin:20,
+    textAlign: "right",
+    margin: 20,
   },
 });

@@ -1,19 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, ActivityIndicator, useColorScheme } from "react-native";
 import { theme } from "../constants/styles";
 import AdminBottom from "./AdminBottom";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import Header from "../component/Header/header";
+import { useThemeContext } from "../../ThemeContext";
 
 const Admin = () => {
   const navigation = useNavigation();
   const [authors, setAuthors] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const [channels, setChannels] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);  // Initially loading is true
   const { access_token } = useSelector((state) => state.userReducer);
+  const colorScheme = useColorScheme();
+  const { isDarkMode, toggleTheme } = useThemeContext(); // Access dark mode from context
+
+  const backgroundColor = isDarkMode ? '#1E1E1E' : '#FFFFFF';
+  const textColor = isDarkMode ? '#FFFFFF' : theme.color.black;
+  const secondaryTextColor = isDarkMode ? '#AAAAAA' : theme.color.textColor;
+  const cardBackgroundColor = isDarkMode ? theme.color.primaryColor : theme.color.primaryColor;
 
   const handleApprovalPress = (user) => {
     navigation.navigate("ApprovelView", { userId: user.id });
@@ -24,23 +32,29 @@ const Admin = () => {
   };
 
   const navigateToBlogDetail = (blog) => {
-    navigation.navigate('BlogDetails', { blog });
+    navigation.navigate("BlogDetails", { blog });
   };
 
   const fetchData = async () => {
     try {
-      setLoading(true);
       await Promise.all([GETPENDINGAUTHORS(), GETBLOGS(), FETCHCHANNELS()]);
-      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
-      setLoading(false);
     }
   };
 
+  // Fetch data on initial load
   useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData();  // Fetch data every 2 seconds
+    }, 2000);
+
+    // Fetch initial data first
     fetchData();
-  }, []);
+
+    // Cleanup the interval when the component is unmounted
+    return () => clearInterval(interval);
+  }, []); // Empty dependency array ensures it only runs once when the component mounts
 
   const GETPENDINGAUTHORS = async () => {
     try {
@@ -55,7 +69,7 @@ const Admin = () => {
 
   const GETBLOGS = async () => {
     try {
-      const response = await axios.get("https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/blogs");
+      const response = await axios.get("https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/blogs/pending");
       setBlogs(response.data);
     } catch (error) {
       console.error("Error in GETBLOGS API:", error);
@@ -66,84 +80,94 @@ const Admin = () => {
     try {
       const response = await axios.get("https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/channels");
       setChannels(response.data);
+      setLoading(false);  // Set loading to false after data is fetched
     } catch (error) {
       console.error("Error in FETCHCHANNELS API:", error);
+      setLoading(false);  // Make sure loading is set to false even if there's an error
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={theme.color.primaryColor} />
-      </View>
-    );
-  }
 
   return (
     <>
-               <Header title="Sohaf Admin"  backPage={() => navigation.goBack()} />
-      <ScrollView>
-        <View style={styles.container}>
-          <View style={styles.liveHeader}>
-            <Text style={styles.liveText}>Our New Channels</Text>
+      <Header title="صُحف المسؤول" backPage={() => navigation.goBack()} />
+      {/* Loader will cover only content section */}
+      <View style={{ flex: 1, backgroundColor }}>
+        {loading ? (
+          <View style={[styles.loaderContainer, { backgroundColor }]}>
+            <ActivityIndicator size="large" color={theme.color.primaryColor} />
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.liveNewsContainer}>
-            {channels.length > 0 ? (
-              channels.map((channel, index) => (
-                <TouchableOpacity key={index} onPress={() => handleChannelPress(channel)}>
-                  <View style={styles.logoWrapper}>
-                    <Image source={{ uri: channel.image || "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/24/a7/72/24a77254-9002-9999-c101-081f662035e8/AppIcon-0-0-1x_U007emarketing-0-8-0-P3-85-220.png/1200x630wa.png" }} style={styles.logo} />
-                    <Text style={styles.logoText}>{channel.title}</Text>
-                  </View>
+        ) : (
+          <ScrollView style={{ flex: 1 }}>
+            <View style={styles.container}>
+              {/* Live Channels Section */}
+              <View style={styles.liveHeader}>
+                <Text style={[styles.liveText, { color: textColor }]}>قنواتنا الجديدة</Text>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.liveNewsContainer}>
+                {channels.length > 0 ? (
+                  channels.map((channel, index) => (
+                    <TouchableOpacity key={index} onPress={() => handleChannelPress(channel)}>
+                      <View style={[styles.logoWrapper, { backgroundColor: cardBackgroundColor }]}>
+                        <Image
+                          source={{ uri: channel.image || "https://via.placeholder.com/60" }}
+                          style={styles.logo}
+                        />
+                        <Text style={[styles.logoText, { color: textColor }]}>{channel.title}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <Text style={[styles.noDataText, { color: secondaryTextColor }]}>لا توجد قنوات متاحة</Text>
+                )}
+              </ScrollView>
+
+              {/* Blogs Section */}
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: textColor }]}>أحدث المدونات</Text>
+                <TouchableOpacity onPress={() => navigation.navigate("BlogList")}>
+                  <Text style={[styles.viewAll, { color: theme.color.primaryColor }]}>عرض الكل</Text>
                 </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noDataText}>No channels available</Text>
-            )}
-          </ScrollView>
-          
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Latest Blog</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("BlogList")}>
-              <Text style={styles.viewAll}>View All</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.blogContainer}>
-            {blogs.length > 0 ? (
-              blogs.map((blog, index) => (
-                <TouchableOpacity key={index} style={styles.blogCard} onPress={() => navigateToBlogDetail(blog)}>
-                  <Image source={{ uri: blog.image }} style={styles.blogImage} />
-                  <Text style={styles.blogTitle}>{blog.title}</Text>
-                  <Text numberOfLines={2} style={styles.blogDescription}>{blog.description}</Text>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.blogContainer}>
+                {blogs.length > 0 ? (
+                  blogs.map((blog, index) => (
+                    <TouchableOpacity key={index} style={[styles.blogCard, { backgroundColor: cardBackgroundColor }]} onPress={() => navigateToBlogDetail(blog)}>
+                      <Image source={{ uri: blog.image || "https://via.placeholder.com/220x90" }} style={styles.blogImage} />
+                      <Text style={[styles.blogTitle, { color: textColor }]}>{blog.title}</Text>
+                      <Text numberOfLines={2} style={[styles.blogDescription, { color: secondaryTextColor }]}>{blog.description}</Text>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <Text style={[styles.noDataText, { color: secondaryTextColor }]}>لا توجد مدونات متاحة</Text>
+                )}
+              </ScrollView>
+
+              {/* Pending Author Approvals Section */}
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: textColor }]}>في انتظار الموافقات</Text>
+                <TouchableOpacity onPress={() => navigation.navigate("Aprrvoles")}>
+                  <Text style={[styles.viewAll, { color: theme.color.primaryColor }]}>عرض الكل</Text>
                 </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noDataText}>No blogs available</Text>
-            )}
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.approvalsContainer}>
+                {authors.length > 0 ? (
+                  authors.map((user, index) => (
+                    <TouchableOpacity key={index} style={[styles.approvalCard, { backgroundColor: cardBackgroundColor }]} onPress={() => handleApprovalPress(user)}>
+                      <Image source={{ uri: user.avatar || "https://via.placeholder.com/70" }} style={styles.approvalImage} />
+                      <Text style={[styles.approvalName, { color: textColor }]}>{user.name}</Text>
+                      <Text style={[styles.approvalRole, { color: secondaryTextColor }]}>عرض التفاصيل</Text>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <Text style={[styles.noDataText, { color: secondaryTextColor }]}>لا يوجد مؤلفون بانتظار الموافقة</Text>
+                )}
+              </ScrollView>
+            </View>
           </ScrollView>
-          
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Waiting for Approvals</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Approvals")}>
-              <Text style={styles.viewAll}>View All</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.approvalsContainer}>
-            {authors.length > 0 ? (
-              authors.map((user, index) => (
-                <TouchableOpacity key={index} style={styles.approvalCard} onPress={() => handleApprovalPress(user)}>
-                  <Image source={{ uri: user.avatar }} style={styles.approvalImage} />
-                  <Text style={styles.approvalName}>{user.name}</Text>
-                  <Text style={styles.approvalRole}>View details</Text>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noDataText}>No pending authors</Text>
-            )}
-          </ScrollView>
-        </View>
-      </ScrollView>
-      <AdminBottom />
+        )}
+        <AdminBottom />
+      </View>
     </>
   );
 };
@@ -156,18 +180,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   liveHeader: {
- 
     paddingVertical: 15,
     paddingHorizontal: 10,
-  
   },
   liveText: {
     fontSize: 18,
     fontWeight: '900',
-    color: theme.color.black,
   },
   liveNewsContainer: {
     flexDirection: 'row',
@@ -177,19 +197,29 @@ const styles = StyleSheet.create({
   logoWrapper: {
     alignItems: 'center',
     marginHorizontal: 10,
+    padding: 10,
+    width:90,
+    height:100,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
+    elevation: 5,
+  
+    marginBottom:15,
   },
   logo: {
-    width: 60,
-    height: 60,
+    width: 50,
+    height: 50,
     borderRadius: 100,
   },
   logoText: {
-    color: "#ffff",
-    fontSize: 12,
+    fontSize:9,
     fontWeight: 'bold',
     marginTop: 5,
-    backgroundColor: "red",
     paddingHorizontal: 10,
+    textAlign: 'center',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -201,10 +231,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '900',
-    color: theme.color.black,
   },
   viewAll: {
-    color: theme.color.primaryColor,
     fontSize: 16,
     fontWeight: "900",
   },
@@ -216,14 +244,15 @@ const styles = StyleSheet.create({
   blogCard: {
     width: 220,
     marginRight: 10,
-    backgroundColor: '#fff',
     borderRadius: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
     padding: 10,
     height: "auto",
+    marginBottom:15,
+    elevation: 5,
   },
   blogImage: {
     width: '100%',
@@ -234,52 +263,50 @@ const styles = StyleSheet.create({
   blogTitle: {
     fontSize: 14,
     marginVertical: 5,
-    color: theme.color.black,
-    fontWeight: "600",
+    fontWeight: "bold",
   },
   blogDescription: {
     fontSize: 12,
-    color: theme.color.textColor,
-    marginVertical: 5,
+    color: '#888',
   },
   approvalsContainer: {
     marginTop: 10,
     paddingLeft: 10,
+    height: "auto",
   },
   approvalCard: {
-    width: 120,
+    width: 70,
+    height: 90,
     marginRight: 10,
-    alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
-    height: 150,
+    padding: 10,
+    elevation: 5,
   },
   approvalImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 60,
+    height: 60,
+    borderRadius: 100,
   },
   approvalName: {
-    fontSize: 12,
-    color: theme.color.black,
-    marginTop: 5,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 5,
   },
   approvalRole: {
     fontSize: 12,
-    color: theme.color.textColor,
-    marginTop: 5,
+    color: '#888',
+    textAlign: 'center',
   },
   noDataText: {
     fontSize: 14,
-    color: theme.color.textColor,
-    fontStyle: 'italic',
-    margin: 10,
+    fontWeight: "900",
+    color: '#888',
+    textAlign: 'center',
   },
 });
 

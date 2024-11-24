@@ -176,7 +176,7 @@ const SignUp = () => {
 
   return (
     <ImageBackground 
-    source={{uri:"https://t3.ftcdn.net/jpg/03/55/60/70/360_F_355607062_zYMS8jaz4SfoykpWz5oViRVKL32IabTP.jpg"}}  // Add your background image path here
+    source={{ uri: "https://t3.ftcdn.net/jpg/03/55/60/70/360_F_355607062_zYMS8jaz4SfoykpWz5oViRVKL32IabTP.jpg" }}
     style={styles.backgroundImage} 
     resizeMode="cover"
   >
@@ -184,242 +184,240 @@ const SignUp = () => {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : null}
     >
-     
       <Text style={{
         fontSize: 28,
         fontWeight: "900",
         color: theme.color.black,
         textAlign: "left",
-        marginHorizontal:20,
-        marginVertical:10,
+        marginHorizontal: 20,
+        marginVertical: 10,
       }}>
-        Create Account
+        إنشاء حساب
       </Text>
       <Text style={{
-         fontSize: 15,
-         color: theme.color.black,
-         textAlign: "left",
-         fontWeight:"500",
-        color:theme.color.black,
-        marginHorizontal:20,
-
+        fontSize: 15,
+        color: theme.color.black,
+        textAlign: "left",
+        fontWeight: "500",
+        marginHorizontal: 20,
       }}>
-        Create an account so you can expire all the existing News
+        قم بإنشاء حساب لتتمكن من استكشاف جميع الأخبار الحالية
       </Text>
       <ScrollView>
         <View style={styles.logo}>
-           <View>
-           <View style={styles.avatarWrapper}>
-           <Avatar.Image
-              size={90}
-              
-              
-              source={
-                avatar
-                  ? { uri: avatar.uri }
-                  : require("../../assets/images/Profile_avatar_placeholder_large.png")
-              }
-              style={styles.avatar}
-            />
+          <View>
+            <View style={styles.avatarWrapper}>
+              <Avatar.Image
+                size={90}
+                source={
+                  avatar
+                    ? { uri: avatar.uri }
+                    : require("../../assets/images/Profile_avatar_placeholder_large.png")
+                }
+                style={styles.avatar}
+              />
             </View>
-
-           </View>
-       <View>
-       <TouchableOpacity style={{
-        backgroundColor:theme.color.black,
-        justifyContent:"center",
-        alignItems:"center",
-        width:140,
-        height:40,
-        borderRadius:20,
-       }} onPress={pickImage}>
-              <Text style={styles.changeAvatarText}>Upload Profile</Text>
+          </View>
+          <View>
+            <TouchableOpacity style={{
+              backgroundColor: theme.color.black,
+              justifyContent: "center",
+              alignItems: "center",
+              width: 140,
+              height: 40,
+              borderRadius: 20,
+            }} onPress={pickImage}>
+              <Text style={styles.changeAvatarText}>تحميل الصورة الشخصية</Text>
             </TouchableOpacity>
-       </View>
+          </View>
         </View>
         <View style={{ paddingHorizontal: 27, marginTop: 15 }}>
           
-        <TextInput
-  value={firstName}
-  label="First Name"
-  
-  style={{ backgroundColor: theme.color.white ,fontSize:13 ,marginBottom:8 }}
-  outlineColor="black"           // Set the outline color to black
-  activeOutlineColor="black"      // Set the active outline color to black
-  theme={{
-    colors: {
-      text: theme.color.black,    // Set the input text color to black
-      primary: "black", 
-                // Set the label color to black
-    },
-  }}
-  onChangeText={(text) => setFirstName(text)}
-/>
-
           <TextInput
-            value={lastName}
-            label={"Last Name"}
-            style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8 }}
-            outlineColor="black"           // Set the outline color to black
-            activeOutlineColor="black"      // Set the active outline color to black
+            value={firstName}
+            label="الاسم الأول"
+            style={{ backgroundColor: theme.color.white, fontSize: 13, marginBottom: 8 }}
+            outlineColor="black"
+            textColor={theme.color.black}
+
+            activeOutlineColor="black"
             theme={{
               colors: {
-                text: theme.color.black,    // Set the input text color to black
-                primary: "black", 
-                          // Set the label color to black
+                text: theme.color.black,
+                primary: "black",
+              },
+            }}
+            onChangeText={(text) => setFirstName(text)}
+          />
+  
+          <TextInput
+            value={lastName}
+            textColor={theme.color.black}
+
+            label="الاسم الأخير"
+            style={{ backgroundColor: theme.color.white, fontSize: 13, marginBottom: 8 }}
+            outlineColor="black"
+            activeOutlineColor="black"
+            theme={{
+              colors: {
+                text: theme.color.black,
+                primary: "black",
               },
             }}
             onChangeText={(text) => setLastName(text)}
           />
+  
           <TextInput
             value={userEmail}
-            style={{ backgroundColor: theme.color.white ,fontSize:13,marginBottom:8 }}
-            label={"Email"}
-            outlineColor="black"           // Set the outline color to black
-            activeOutlineColor="black"      // Set the active outline color to black
+            label="البريد الإلكتروني"
+            style={{ backgroundColor: theme.color.white, fontSize: 13, marginBottom: 8 }}
+            outlineColor="black"
+            activeOutlineColor="black"
+            textColor={theme.color.black}
             theme={{
               colors: {
-                text: theme.color.black,    // Set the input text color to black
-                primary: "black", 
-                          // Set the label color to black
+                text: theme.color.black,
+                primary: "black",
               },
             }}
             onChangeText={(text) => setUserEmail(text)}
           />
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-        <CountryPicker
-  countryCode={countryCode}
-  withFilter
-  withFlag
-  withCallingCode
-  withCallingCodeButton
-  withEmoji
-  onSelect={(country) => {
-    setCountryCode(country.cca2);
-    setCallingCode(country.callingCode[0]);
-  }}
-  containerButtonStyle={{
-    marginRight: 10,
   
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+            <CountryPicker
+              countryCode={countryCode}
+              withFilter
+              withFlag
+              withCallingCode
+              withCallingCodeButton
+              withEmoji
+              onSelect={(country) => {
+                setCountryCode(country.cca2);
+                setCallingCode(country.callingCode[0]);
+              }}
+              containerButtonStyle={{
+                marginRight: 10,
+              }}
+            />
+  
+            <TextInput
+              value={userNumber}
+              keyboardType="number-pad"
+              label="رقم الهاتف"
+              textColor={theme.color.black}
 
-  }}
-/>
+              style={{
+                flex: 1,
+                backgroundColor: theme.color.white,
+                marginBottom: 8
+              }}
+              outlineColor="black"
+              activeOutlineColor="black"
+              theme={{
+                colors: {
+                  text: theme.color.black,
+                  primary: "black",
+                },
+              }}
+              onChangeText={(text) => setUserNumber(text)}
+            />
+          </View>
+  
+          <View style={styles.passwordContainer}>
+            <TextInput
+              label="كلمة المرور"
+              textColor={theme.color.black}
 
-      <TextInput
-        value={userNumber}
-        keyboardType="number-pad"
-        label={"Phone"}
-        style={{
-          flex: 1,
-          backgroundColor: theme.color.white ,
-          marginBottom:8
-        }}
-        outlineColor="black"           // Set the outline color to black
-        activeOutlineColor="black"      // Set the active outline color to black
-        theme={{
-          colors: {
-            text: theme.color.black,    // Set the input text color to black
-            primary: "black", 
-                      // Set the label color to black
-          },
-        }}
-
-        onChangeText={(text) => setUserNumber(text)}
-      />
-    </View>
-      
-
-<View style={styles.passwordContainer}>
-              <TextInput
-              label={"Password"}
               value={userPassword}
-                secureTextEntry={passwordToggle}
-                style={{
-                  flex: 1,
-                  backgroundColor: theme.color.white ,
-                  marginBottom:8
-                }}
-                outlineColor="black"           // Set the outline color to black
-                activeOutlineColor="black"      // Set the active outline color to black
-                theme={{
-                  colors: {
-                    text: theme.color.black,    // Set the input text color to black
-                    primary: "black", 
-                              // Set the label color to black
-                  },
-                }}
-                   onChangeText={(text) => setUserPassword(text)}
+              secureTextEntry={passwordToggle}
+              style={{
+                flex: 1,
+                backgroundColor: theme.color.white,
+                marginBottom: 8
+              }}
+              outlineColor="black"
+              activeOutlineColor="black"
+              theme={{
+                colors: {
+                  text: theme.color.black,
+                  primary: "black",
+                },
+              }}
+              onChangeText={(text) => setUserPassword(text)}
+            />
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.togglePassword}
+              onPress={() => setPasswordToggle(!passwordToggle)}
+            >
+              <Image
+                style={styles.icon}
+                source={passwordToggle ? require("../../assets/images/view.png") : require("../../assets/images/hide.png")}
               />
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.togglePassword}
-                onPress={() => setPasswordToggle(!passwordToggle)} >
-                <Image
-                  style={styles.icon}
-                  source={passwordToggle ? require("../../assets/images/view.png") : require("../../assets/images/hide.png")}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.passwordContainer}>
-              <TextInput
-               value={confirmPassword}
-               label={"Confirm Password"}
-                secureTextEntry={passwordToggle}
-                style={{
-                  flex: 1,
-                  backgroundColor: theme.color.white ,
-                  marginBottom:8
-
-                }}
-                outlineColor="black"           // Set the outline color to black
-                activeOutlineColor="black"      // Set the active outline color to black
-                theme={{
-                  colors: {
-                    text: theme.color.black,    // Set the input text color to black
-                    primary: "black", 
-                              // Set the label color to black
-                  },
-                }}
-                
-                onChangeText={(text) => setConfirmPassword(text)}
+            </TouchableOpacity>
+          </View>
+  
+          <View style={styles.passwordContainer}>
+            <TextInput
+              label="تأكيد كلمة المرور"
+              value={confirmPassword}
+              secureTextEntry={passwordToggle}
+              style={{
+                flex: 1,
+                backgroundColor: theme.color.white,
+                marginBottom: 8
+              }}
+              outlineColor="black"
+              activeOutlineColor="black"
+              theme={{
+                colors: {
+                  text: theme.color.black,
+                  primary: "black",
+                },
+              }}
+              onChangeText={(text) => setConfirmPassword(text)}
+            />
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.togglePassword}
+              onPress={() => setPasswordToggle(!passwordToggle)}
+            >
+              <Image
+                style={styles.icon}
+                source={passwordToggle ? require("../../assets/images/view.png") : require("../../assets/images/hide.png")}
               />
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.togglePassword}
-                onPress={() => setPasswordToggle(!passwordToggle)} >
-                <Image
-                  style={styles.icon}
-                  source={passwordToggle ? require("../../assets/images/view.png") : require("../../assets/images/hide.png")}
-                />
-              </TouchableOpacity>
-            </View>
-       
-          <Text style={styles.iAmText}>I am a</Text>
+            </TouchableOpacity>
+          </View>
+  
+          <Text style={styles.iAmText}>أنا</Text>
           <RadioButton.Group onValueChange={(value) => setRole(value)} value={role}>
             <View style={styles.radioButtonRow}>
               <View style={styles.radioButtonContainer}>
                 <RadioButton value="user" />
-                <Text style={styles.radioLabel}>Visitor</Text>
+                <Text style={styles.radioLabel}>زائر</Text>
               </View>
               <View style={styles.radioButtonContainer}>
                 <RadioButton value="author" />
-                <Text style={styles.radioLabel}>Author</Text>
+                <Text style={styles.radioLabel}>مؤلف</Text>
               </View>
             </View>
           </RadioButton.Group>
+  
           <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text style={styles.loginText}>Already have an account? Login</Text>
+            <Text style={styles.loginText}>هل لديك حساب؟ تسجيل الدخول</Text>
           </TouchableOpacity>
+          
           <CustomButton
             loading={loader}
-            title={"Sign Up"}
+            title="تسجيل"
             customButtonStyle={{ marginTop: 25, backgroundColor: theme.color.primaryColor }}
             onPress={createAccountHandle}
           />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
-</ImageBackground>
+  </ImageBackground>
+  
   );
 };
 

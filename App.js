@@ -8,6 +8,9 @@ import {StripeProvider} from '@stripe/stripe-react-native';
 import MainNavigation from './src/Routes/MainNavigation';
 import VersionCheck from 'react-native-version-check';
 import FlashMessage from "react-native-flash-message";
+import { ThemeProvider } from './ThemeContext';
+import { PaperProvider } from 'react-native-paper';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function App() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -36,12 +39,16 @@ export default function App() {
   };
 
   return (
-
-      <Provider store={Store}>
+    <Provider store={Store}>
+    <ThemeProvider>
+      <PaperProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <MainNavigation />
-        <FlashMessage style={{marginBottom:20}} />
-      
-      </Provider>
+        </GestureHandlerRootView >
+        <FlashMessage style={{ marginBottom: 20 }} />
+      </PaperProvider>
+    </ThemeProvider>
+  </Provider>
 
   );
 }

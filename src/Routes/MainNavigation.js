@@ -49,6 +49,9 @@ import AddBlog from '../screen/AddBlog';
 import AllBlog from '../screen/AllBlog';
 import AuthorProfile from '../screen/AuthorProfile';
 import AuthorPending from '../screen/AuthorPending';
+import NewsBlogPage from '../screen/NewsBlogPage';
+import VisitorHomeScreen from '../screen/Auth/VisitorHomeScreen';
+import Setting from '../screen/Setting';
 
 const Stack = createNativeStackNavigator();
 
@@ -432,6 +435,48 @@ const MainNavigation = () => {
           <Stack.Screen
         name="AuthorPending"
         component={AuthorPending}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="NewsBlogPage"
+        component={NewsBlogPage}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+       <Stack.Screen
+        name="VisitorHomeScreen"
+        component={VisitorHomeScreen}
+        options={{
+          headerShown: false,
+          headerStyle: {
+            backgroundColor: Colors.Primary,
+          },
+          headerTintColor: Colors.White,
+          headerTitleStyle: {
+            fontFamily: Fonts.Bold,
+          },
+        }}
+      />
+       <Stack.Screen
+        name="Setting"
+        component={Setting}
         options={{
           headerShown: false,
           headerStyle: {

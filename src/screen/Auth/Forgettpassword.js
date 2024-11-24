@@ -1,240 +1,272 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
-
   TouchableOpacity,
   Image,
   Modal,
   Alert,
   ActivityIndicator,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { ToastMessage, helpers } from '../../utils/helpers';
-import { theme } from '../../constants/styles';
-import { TextInput } from 'react-native-paper';
-import CustomButton from '../../component/Buttons/customButton';
-import { ImageBackground } from 'react-native';
+  ToastAndroid,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { theme } from "../../constants/styles";
+import { TextInput } from "react-native-paper";
+import CustomButton from "../../component/Buttons/customButton";
+import { ImageBackground } from "react-native";
 
 export default function ForgetPassword() {
   const navigation = useNavigation();
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [code, setCode] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loader, setLoader] = useState(false);
+  const [step, setStep] = useState(1); // 1: Request OTP, 2: Verify OTP, 3: Reset Password
 
-  const validateField = () => {
-    const cleanedEmail = email.replace(/\s/g, '');
+  const validateEmail = () => {
+    const cleanedEmail = email.trim();
     const emailValidation = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,7})+$/;
-    if (email === '') {
-      ToastMessage('Email Address Required*');
+    if (!email) {
+      ToastAndroid.show("Email Address Required*", ToastAndroid.SHORT);
       return false;
-    } else if (emailValidation.test(cleanedEmail) === false) {
-      ToastMessage('Enter Valid Email Address');
+    } else if (!emailValidation.test(cleanedEmail)) {
+      ToastAndroid.show("Enter Valid Email Address", ToastAndroid.SHORT);
       return false;
     }
     return true;
   };
-  const resetPasswordHandle = () => {
+
+  const handleRequestOTP = async () => {
+    if (!validateEmail()) return;
+    setLoader(true);
     try {
-      if (validateField()) {
-        setLoader(true);
-        const formdata = new FormData();
-        formdata.append('email', email);
-  
-        const requestOptions = {
-          method: 'POST',
-          body: formdata,
-          redirect: 'follow',
-        };
-  
-        fetch(`${helpers.api.baseUrl}forgot/password`, requestOptions)
-          .then((response) => response.json())
-          .then((result) => {
-            setLoader(false);
-            console.log('API Response:', result); // Log the entire result object
-            
-            // Check for a successful response
-            if (result?.user) {
-              ToastMessage(result?.message);
-              navigation.navigate("VerifyOtp");
-            } else {
-              ToastMessage(result?.message);
-            }
-          })
-          .catch((error) => {
-            setLoader(false);
-            ToastMessage(error?.message);
-          });
+      const response = await fetch("https://dodgerblue-chinchilla-339711.hostingersite.com/api/forgot/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const result = await response.json();
+      setLoader(false);
+      if (result) {
+        ToastAndroid.show(result.message, ToastAndroid.SHORT);
+        // Step update only after successful response
+        setTimeout(() => setStep(2), 500); // Delayed state update
+      } else {
+        ToastAndroid.show(result.message, ToastAndroid.SHORT);
       }
     } catch (error) {
       setLoader(false);
-      ToastMessage(error?.message);
+      ToastAndroid.show("Failed to send OTP", ToastAndroid.SHORT);
     }
   };
   
-  const handleSubmitCode = () => {
-    // Handle the entered code submission
-    Alert.alert('Code Submitted', `Entered Code: ${code}`);
-    setModalVisible(false);
+
+  const handleVerifyOTP = async () => {
+    setLoader(true);
+    try {
+      const response = await fetch(`https://dodgerblue-chinchilla-339711.hostingersite.com/api/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      });
+      const result = await response.json();
+      setLoader(false);
+      if (result) {
+        ToastAndroid.show(result, ToastAndroid.SHORT);
+        // Step update only after successful response
+        setTimeout(() => setStep(3), 500); // Delayed state update
+      } else {
+        ToastAndroid.show(result, ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      setLoader(false);
+      ToastAndroid.show("Failed to verify OTP", ToastAndroid.SHORT);
+    }
+  };
+  
+
+  const handleResetPassword = async () => {
+    if (newPassword !== confirmPassword) {
+      ToastAndroid.show("Passwords do not match", ToastAndroid.SHORT);
+      return;
+    }
+    setLoader(true);
+    try {
+      const response = await fetch("https://dodgerblue-chinchilla-339711.hostingersite.com/api/reset/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: newPassword, password_confirmation: confirmPassword }),
+      });
+      const result = await response.json();
+      setLoader(false);
+      if (result.success) {
+        ToastAndroid.show(result.message, ToastAndroid.SHORT);
+        navigation.navigate("Login");
+      } else {
+        ToastAndroid.show(result.message, ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      setLoader(false);
+      ToastAndroid.show("Failed to reset password", ToastAndroid.SHORT);
+    }
   };
 
   return (
- <>
- <ImageBackground 
-        source={{uri:"https://t3.ftcdn.net/jpg/03/55/60/70/360_F_355607062_zYMS8jaz4SfoykpWz5oViRVKL32IabTP.jpg"}}  // Add your background image path here
-        style={styles.backgroundImage} 
-        resizeMode="cover"
-      >
-    <View style={styles.container}>
-    <Text style={styles.heading}>Forgot Password</Text>
-    <Text style={styles.subText}>
-  Enter your email to receive password reset OTP.
-</Text>
+<ImageBackground
+  source={{
+    uri: "https://t3.ftcdn.net/jpg/03/55/60/70/360_F_355607062_zYMS8jaz4SfoykpWz5oViRVKL32IabTP.jpg",
+  }}
+  style={styles.backgroundImage}
+  resizeMode="cover"
+>
+  <View style={styles.container}>
+    {step === 1 && (
+      <>
+        <Text style={styles.heading}>نسيت كلمة المرور</Text>
+        <Text style={styles.subText}>أدخل بريدك الإلكتروني لتلقي رمز التحقق لإعادة تعيين كلمة المرور.</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="أدخل بريدك الإلكتروني"
+          placeholderTextColor="#999999"
+          keyboardType="email-address"
+          value={email}
+          textColor={theme.color.black}
+          activeOutlineColor="black"
+          theme={{
+            colors: {
+              text: theme.color.black,
+              primary: "black",
+            },
+          }}
+          onChangeText={setEmail}
+        />
+        <CustomButton
+          loading={loader}
+          title={"إرسال الرمز"}
+          onPress={handleRequestOTP}
+          customButtonStyle={styles.customButton}
+        />
+      </>
+    )}
 
- 
+    {step === 2 && (
+      <>
+        <Text style={styles.heading}>تأكيد رمز التحقق</Text>
+        <Text style={styles.subText}>أدخل رمز التحقق المرسل إلى بريدك الإلكتروني.</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="أدخل رمز التحقق"
+          placeholderTextColor="#999999"
+          keyboardType="numeric"
+          value={code}
+          onChangeText={setCode}
+          textColor={theme.color.black}
+          activeOutlineColor="black"
+          theme={{
+            colors: {
+              text: theme.color.black,
+              primary: "black",
+            },
+          }}
 
-      {/* Input Field for Email */}
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your email"
-        placeholderTextColor="#999999"
-        keyboardType="email-address"
-        value={email}
-        mode="outlined" 
-        outlineColor="#ffff"
-        activeOutlineColor="#0000"
-        onChangeText={setEmail}
-      />
+        />
+        <CustomButton
+          loading={loader}
+          title={"تأكيد رمز التحقق"}
+          onPress={handleVerifyOTP}
+          customButtonStyle={styles.customButton}
+        />
+      </>
+    )}
 
-      {/* Submit Button */}
-      <CustomButton
-            loading={loader}
-            title={"Send Code"}
-            activeOpacity={0.7}
-            onPress={handleSubmitCode}
-            customButtonStyle={styles.customButton}
-          />
+    {step === 3 && (
+      <>
+        <Text style={styles.heading}>إعادة تعيين كلمة المرور</Text>
+        <Text style={styles.subText}>أدخل كلمة المرور الجديدة.</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="كلمة المرور الجديدة"
+          placeholderTextColor="#999999"
+          secureTextEntry={true}
+          textColor={theme.color.black}
+          value={newPassword}
+          onChangeText={setNewPassword}
+          activeOutlineColor="black"
+          theme={{
+            colors: {
+              text: theme.color.black,
+              primary: "black",
+            },
+          }}
 
-      {/* Modal for Entering Code */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isModalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalHeading}>Enter Verification Code</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter code"
-              placeholderTextColor="#999999"
-              value={code}
-              onChangeText={(text) => setCode(text)}
-              keyboardType="numeric"
-            />
-            <TouchableOpacity style={styles.button} onPress={handleSubmitCode}>
-              <Text style={styles.buttonText}>Submit Code</Text>
-            </TouchableOpacity>
-         
-          </View>
-        </View>
-      </Modal>
-    </View>
-    </ImageBackground>
- </>
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="تأكيد كلمة المرور الجديدة"
+          placeholderTextColor="#999999"
+          secureTextEntry={true}
+          value={confirmPassword}
+          textColor={theme.color.black}
+          activeOutlineColor="black"
+          theme={{
+            colors: {
+              text: theme.color.black,
+              primary: "black",
+            },
+          }}
+
+          onChangeText={setConfirmPassword}
+        />
+        <CustomButton
+          loading={loader}
+          title={"إعادة تعيين كلمة المرور"}
+          onPress={handleResetPassword}
+          customButtonStyle={styles.customButton}
+        />
+      </>
+    )}
+  </View>
+</ImageBackground>
+
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop:50,
     padding: 20,
   },
   backgroundImage: {
     flex: 1,
     justifyContent: "center",
   },
-  logoContainer: {
-    marginBottom: 30,
-    height: 100,
-    width: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   heading: {
     fontSize: 28,
     fontWeight: "900",
     color: theme.color.black,
     textAlign: "left",
+    marginBottom: 10,
   },
   subText: {
     fontSize: 15,
     color: theme.color.black,
     textAlign: "left",
-    marginBottom: 30,
-    fontWeight:"500"
+    marginBottom: 20,
+    fontWeight: "500",
   },
   input: {
     backgroundColor: "#fff",
     marginBottom: 20,
-    width:"100%"
+    width: "100%",
   },
-  button: {
-    width: '100%',
+  customButton: {
+    width: "100%",
     height: 50,
     backgroundColor: theme.color.primaryColor,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 8,
-  },
-  buttonText: {
-    color: theme.color.black,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '80%',
-    backgroundColor: '#FFF',
-    padding: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  modalHeading: {
-    fontSize: 20,
-    color: '#000000',
-    marginBottom: 20,
-    fontWeight: 'bold',
-  },
-  circle: {
-    width: 70,
-    height: 70,
-    backgroundColor: theme.color.primaryColor,
-    borderRadius: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dcText: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: 'black',
-    textAlign: 'center',
-    lineHeight: 75,
   },
 });

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { theme } from '../constants/styles';
 import Header from '../component/Header/header';
 import AdminBottom from './AdminBottom';
+import { useThemeContext } from '../../ThemeContext';
 
 const AuthorsScreen = ({ navigation }) => {
     const [pendingAuthors, setPendingAuthors] = useState([]);
@@ -11,13 +12,17 @@ const AuthorsScreen = ({ navigation }) => {
     const [loadingPending, setLoadingPending] = useState(true);
     const [loadingApproved, setLoadingApproved] = useState(true);
     const [activeTab, setActiveTab] = useState('pending');
+    const { isDarkMode, toggleTheme } = useThemeContext(); // Dark mode from context
+
+    const backgroundColor = isDarkMode ? '#1E1E1E' : '#FFFFFF';
+    const textColor = isDarkMode ? '#FFFFFF' : theme.color.black;
 
     const fetchPendingAuthors = async () => {
         try {
             const response = await axios.get('https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/authors/pending');
             setPendingAuthors(response.data);
         } catch (error) {
-            console.error("Error fetching pending authors", error);
+            console.error("خطأ في جلب المؤلفين المعلقين", error);
         } finally {
             setLoadingPending(false);
         }
@@ -28,15 +33,22 @@ const AuthorsScreen = ({ navigation }) => {
             const response = await axios.get('https://dodgerblue-chinchilla-339711.hostingersite.com/api/admin/authors/approved');
             setApprovedAuthors(response.data);
         } catch (error) {
-            console.error("Error fetching approved authors", error);
+            console.error("خطأ في جلب المؤلفين المعتمدين", error);
         } finally {
             setLoadingApproved(false);
         }
     };
 
+    // Fetch data after a 2-second delay
     useEffect(() => {
-        fetchPendingAuthors();
-        fetchApprovedAuthors();
+        const delayFetch = async () => {
+            setTimeout(() => {
+                fetchPendingAuthors();
+                fetchApprovedAuthors();
+            }, 2000);
+        };
+
+        delayFetch();
     }, []);
 
     const handleApprovalPress = (user) => {
@@ -47,10 +59,10 @@ const AuthorsScreen = ({ navigation }) => {
 
     const renderAuthorItem = ({ item }) => (
         <TouchableOpacity onPress={() => handleApprovalPress(item)}>
-            <View style={styles.authorCard}>
+            <View style={[styles.authorCard, { backgroundColor }]}>
                 <View style={styles.authorInfoContainer}>
                     <Image source={{ uri: item.avatar }} style={styles.avatar} />
-                    <Text style={styles.authorName}>{item.name}</Text>
+                    <Text style={[styles.authorName, { color: textColor }]}>{item.name}</Text>
                 </View>
                 <TouchableOpacity style={styles.approveButton} onPress={() => handleApprovalPress(item)}>
                     <Image style={styles.approveIcon} source={require("../assets/images/rigthhh.png")} />
@@ -61,35 +73,35 @@ const AuthorsScreen = ({ navigation }) => {
 
     const renderLoadingScreen = () => (
         <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={theme.color.black} />
-            <Text style={styles.loadingText}>Loading authors...</Text>
+            <ActivityIndicator size="large" color={theme.color.primaryColor} />
+            <Text style={[styles.loadingText, { color: textColor }]}>جارٍ تحميل المؤلفين...</Text>
         </View>
     );
 
     const renderNoAuthorsFound = () => (
         <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>No authors found</Text>
+            <Text style={[styles.loadingText, { color: textColor }]}>لم يتم العثور على مؤلفين</Text>
         </View>
     );
 
     return (
         <>
-            <Header title="Approvals" backArrow backPage={() => navigation.goBack()} />
-            <View style={styles.tabContainer}>
+            <Header title="الموافقات" backArrow backPage={() => navigation.goBack()} />
+<View style={[styles.tabContainer, {}]}>
                 <TouchableOpacity
                     style={[styles.tab, activeTab === 'pending' && styles.activeTab]}
                     onPress={() => setActiveTab('pending')}
                 >
-                    <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>Pending</Text>
+                    <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>معلق</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.tab, activeTab === 'approved' && styles.activeTab]}
                     onPress={() => setActiveTab('approved')}
                 >
-                    <Text style={[styles.tabText, activeTab === 'approved' && styles.activeTabText]}>Approved</Text>
+                    <Text style={[styles.tabText, activeTab === 'approved' && styles.activeTabText]}>معتمد</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.container}>
+            <View style={[styles.container, { backgroundColor }]}>
                 <View style={styles.contentContainer}>
                     {activeTab === 'pending' ? (
                         loadingPending ? renderLoadingScreen() : (
@@ -136,10 +148,11 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         paddingVertical: 10,
+        
     },
     activeTab: {
-        borderBottomWidth: 2,
-        borderBottomColor: theme.color.black,
+        borderBottomWidth: 5,
+        borderBottomColor: theme.color.primaryColor,
     },
     tabText: {
         fontSize: 15,
@@ -157,14 +170,21 @@ const styles = StyleSheet.create({
         padding: 12,
         marginBottom: 10,
         borderRadius: 8,
-        backgroundColor: '#fff',
-        elevation: 3,
         alignItems: "center",
         justifyContent: "space-between",
+        height: 80,
+        backgroundColor: '#fff', // Make sure there is a solid background
+        shadowColor: 'rgba(0, 0, 0, 0.3)', // Darker and more prominent shadow
+        shadowOffset: { width: 0, height: 6 }, // Increase height of the shadow for more depth
+        shadowOpacity: 0.8, // Stronger shadow opacity
+        shadowRadius: 12, // Larger blur radius for a more diffused shadow
+        elevation: 10, // Higher elevation for Android, stronger shadow
     },
+    
+    
     avatar: {
-        width: 60,
-        height: 60,
+        width: 50,
+        height: 50,
         borderRadius: 30,
         marginRight: 15,
     },
@@ -173,9 +193,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     authorName: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '500',
-        color: theme.color.textColor,
     },
     approveButton: {
         padding: 8,
@@ -196,7 +215,6 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 10,
         fontSize: 16,
-        color: theme.color.black,
     },
 });
 

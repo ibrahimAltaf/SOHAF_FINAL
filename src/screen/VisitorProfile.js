@@ -1,93 +1,167 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, useColorScheme, Alert, ToastAndroid } from 'react-native';
-import { useSelector ,useDispatch} from 'react-redux';
-import { theme } from '../constants/styles';
-import Header from '../component/Header/header';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  useColorScheme,
+  ToastAndroid,
+  ActivityIndicator,
+} from "react-native";
+import { useSelector, useDispatch } from "react-redux";
+import { theme } from "../constants/styles";
+import Header from "../component/Header/header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SetUserDetail, SetUserToken } from "../Redux/actions/actions";
-import CustomButton from '../component/Buttons/customButton';
+import CustomButton from "../component/Buttons/customButton";
+import RBSheet from "react-native-raw-bottom-sheet";
+import axios from "axios";
+
 export default function VisitorProfile({ navigation }) {
-    const dispatch = useDispatch();
-
-  const { user_detail } = useSelector((state) => state.userReducer); // Get user details from Redux
+  const dispatch = useDispatch();
+  const { user_detail, access_token } = useSelector((state) => state.userReducer);
   const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const isDarkMode = colorScheme === "dark";
+  const bottomSheetRef = useRef(null);
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const backgroundColor = isDarkMode ? theme.color.darkBackground : theme.color.lightBackground;
-  const textColor = isDarkMode ? theme.color.white : theme.color.black;
-  const logoutHandle = async () => {
+  const backgroundColor = isDarkMode ? "#000" : theme.color.lightBackground;
+  const textColor = isDarkMode ? "#fff" : theme.color.black;
+  const lineColor = isDarkMode ? "#444" : "#ddd";
+
+  useEffect(() => {
+    if (access_token) {
+      fetchProfileData();
+    } else {
+      bottomSheetRef.current?.open();
+    }
+  }, [access_token]);
+
+  const fetchProfileData = async () => {
     try {
-      // Retrieve access_token from AsyncStorage if needed
-      const access_token = await AsyncStorage.getItem("access_token");
-  
-      if (!access_token) {
-        // If no access_token is found, navigate to Login screen directly
-        navigation.navigate("Login");
-      } else {
-        // Remove access_token and user_detail from AsyncStorage
-        await AsyncStorage.removeItem("access_token");
-        await AsyncStorage.removeItem("user_detail");
-  
-        // Dispatch actions to clear Redux state
-        dispatch(SetUserDetail({}));
-        dispatch(SetUserToken(null));
-  
-        // Show a toast message for successful logout
-        ToastAndroid.show('Logged out successfully!', ToastAndroid.SHORT);
-  
-        // Reset the navigation stack to Login screen
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        });
-      }
+      setLoading(true);
+      const response = await axios.get(
+        `https://dodgerblue-chinchilla-339711.hostingersite.com/api/profile/${user_detail.id}/user`
+      );
+      setProfileData(response.data.profile);
     } catch (error) {
-      console.error("Error during logout:", error);
-      ToastAndroid.show('Failed to log out. Please try again.', ToastAndroid.SHORT);
+      console.error("Error fetching profile data:", error);
+      ToastAndroid.show("فشل في تحميل الملف الشخصي. حاول مرة أخرى.", ToastAndroid.SHORT);
+    } finally {
+      setLoading(false);
     }
   };
-  
-  
+
+  const logoutHandle = async () => {
+    try {
+      await AsyncStorage.removeItem("access_token");
+      await AsyncStorage.removeItem("user_detail");
+      dispatch(SetUserDetail({}));
+      dispatch(SetUserToken(null));
+      ToastAndroid.show("تم تسجيل الخروج بنجاح!", ToastAndroid.SHORT);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      ToastAndroid.show("فشل تسجيل الخروج. حاول مرة أخرى.", ToastAndroid.SHORT);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor }]}>
+        <ActivityIndicator size="large" color={theme.color.primaryColor} />
+      </View>
+    );
+  }
+
   return (
     <>
-      <Header title="Profile" backArrow backPage={() => navigation.goBack()} />
+      <Header title="الملف الشخصي" backArrow backPage={() => navigation.goBack()} />
       <View style={[styles.container, { backgroundColor }]}>
-        <View style={styles.profileHeader}>
-          <Image
-            source={user_detail.avatar ? { uri: user_detail.avatar } : {uri:"https://pngitem.com/pimgs/m/30-307416_profile-icon-png-image-free-download-searchpng-employee.png"}} // Replace with a default avatar if no avatar is provided
-            style={styles.profileImage}
-          />
-          <Text style={[styles.name, { color: textColor }]}>{user_detail.name || 'N/A'}</Text>
-          <Text style={[styles.role, { color: isDarkMode ? theme.color.gray : theme.color.darkGray }]}>
-            {user_detail.type === 'admin' ? 'Administrator' : 'Author'}
-          </Text>
-        </View>
+        {access_token ? (
+          <>
+            <View style={styles.profileHeader}>
+              <Image
+                source={
+                  profileData?.avatar
+                    ? { uri: profileData.avatar }
+                    : {
+                        uri: "https://pngitem.com/pimgs/m/30-307416_profile-icon-png-image-free-download-searchpng-employee.png",
+                      }
+                }
+                style={styles.profileImage}
+              />
+              <Text style={[styles.name, { color: textColor }]}>
+                {profileData?.name || "غير متوفر"}
+              </Text>
+              <Text style={[styles.role, { color: textColor }]}>
+                {profileData?.type === "admin" ? "مسؤول" : "زائر"}
+              </Text>
+            </View>
 
-        <View style={styles.infoContainer}>
-          <Text style={[styles.label, { color: textColor }]}>Email</Text>
-          <Text style={[styles.value, { color: isDarkMode ? theme.color.gray : theme.color.darkGray }]}>
-            {user_detail.email || 'N/A'}
-          </Text>
+            <View style={[styles.infoContainer, { backgroundColor: isDarkMode ? "#111" : "#f5f5f5" }]}>
+              {[
+                { label: "البريد الإلكتروني", value: profileData?.email || "غير متوفر" },
+                { label: "رقم الهاتف", value: profileData?.phone || "غير متوفر" },
+                { label: "الدور", value: profileData?.type === "user" ? "زائر" : profileData?.type || "غير متوفر" },
+                { label: "تاريخ الإنشاء", value: new Date(profileData?.created_at).toLocaleDateString() || "غير متوفر" },
+              ].map((item, index) => (
+                <View key={index} style={[styles.infoRow, { borderBottomColor: lineColor }]}>
+                  <Text style={[styles.label, { color: textColor }]}>{item.label}</Text>
+                  <Text style={[styles.value, { color: textColor }]}>{item.value}</Text>
+                </View>
+              ))}
+            </View>
 
-          <Text style={[styles.label, { color: textColor }]}>Phone Number</Text>
-          <Text style={[styles.value, { color: isDarkMode ? theme.color.gray : theme.color.darkGray }]}>
-            {user_detail.phone || 'N/A'}
-          </Text>
+            <CustomButton
+              title="تسجيل الخروج"
+              onPress={logoutHandle}
+              customButtonStyle={[styles.logoutButton, { backgroundColor: isDarkMode ? "#FFD700" : theme.color.primaryColor }]}
+              customTextStyle={{ color: isDarkMode ? "#000" : "#fff" }}
+            />
+          </>
+        ) : null}
 
-          <Text style={[styles.label, { color: textColor }]}>Role</Text>
-          <Text style={[styles.value, { color: isDarkMode ? theme.color.gray : theme.color.darkGray }]}>
-            {user_detail.type || 'N/A'}
-          </Text>
-
-          <Text style={[styles.label, { color: textColor }]}>Password</Text>
-          <Text style={[styles.value, { color: isDarkMode ? theme.color.gray : theme.color.darkGray }]}>********</Text>
-        </View>
-
-        <CustomButton
-            title="Logout"
-            onPress={logoutHandle}
-            customButtonStyle={styles.closeButton}
-          />
+        <RBSheet
+          ref={bottomSheetRef}
+          height={250}
+          closeOnDragDown={true}
+          customStyles={{
+            container: {
+              justifyContent: "center",
+              alignItems: "center",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              paddingHorizontal: 20,
+              backgroundColor: isDarkMode ? "#333" : "#fff",
+            },
+          }}
+        >
+          <View style={styles.modalContent}>
+            <Text style={[styles.modalText, { color: isDarkMode ? "#fff" : "#333" }]}>
+              يرجى تسجيل الدخول لرؤية الملف الشخصي الخاص بك.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Login")}
+                style={[styles.modalButton, styles.loginButton]}
+              >
+                <Text style={styles.modalButtonText}>تسجيل الدخول</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => bottomSheetRef.current?.close()}
+                style={[styles.modalButton, styles.skipButton]}
+              >
+                <Text style={[styles.modalButtonText, { color: isDarkMode ? "#fff" : "#333" }]}>تخطي</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </RBSheet>
       </View>
     </>
   );
@@ -99,7 +173,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   profileHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   profileImage: {
@@ -110,36 +184,72 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   role: {
     fontSize: 16,
-    color: '#888',
+    marginTop: 5,
   },
   infoContainer: {
-    backgroundColor: '#f5f5f5',
     borderRadius: 10,
     padding: 15,
   },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+  },
   label: {
     fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 10,
+    fontWeight: "bold",
   },
   value: {
     fontSize: 14,
-    marginBottom: 5,
   },
   logoutButton: {
     marginTop: 20,
     padding: 15,
-    backgroundColor: theme.color.primaryColor,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  logoutText: {
-    color: '#fff',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  modalText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 20,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    marginHorizontal: 5,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  loginButton: {
+    backgroundColor: theme.color.primaryColor,
+  },
+  skipButton: {
+    backgroundColor: "#e0e0e0",
+  },
+  modalButtonText: {
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });
