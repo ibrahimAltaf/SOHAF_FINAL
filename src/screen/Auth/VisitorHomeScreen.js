@@ -37,21 +37,11 @@ export default function VisitorHomeScreen({ navigation }) {
         <View style={styles.userRow}>
          
           <View>
-            {access_token ? (
-              <View style={styles.userDetails}>
-                <Image source={{ uri: user_detail.avatar }} style={styles.userImage} />
-                <Text style={[styles.userName, { color: isDarkMode ? theme.color.white : theme.color.black }]}>
-                  {user_detail.name}
-                </Text>
-                <Text style={[{ fontSize: 12 }, { color: isDarkMode ? theme.color.white : theme.color.black }]}>
-                  {user_detail.email}
-                </Text>
-              </View>
-            ) : (
+       
               <View style={styles.userDetails}>
                 <TouchableOpacity
                   style={{
-                    width: 90,
+                    width: 120,
                     height: 40,
                     justifyContent: "center",
                     alignItems: "center",
@@ -60,10 +50,10 @@ export default function VisitorHomeScreen({ navigation }) {
                   }}
                   onPress={() => navigation.navigate('Login')}
                 >
-                  <Text style={[styles.loginButton, { color: isDarkMode ? theme.color.white : theme.color.black }]}>Login</Text>
+                  <Text style={[styles.loginButton, { color: isDarkMode ? theme.color.white : theme.color.black }]}>تسجيل الدخول</Text>
                 </TouchableOpacity>
               </View>
-            )}
+          
           </View>
            <View style={styles.toggleRow}>
             <Text style={[styles.appName, { color: isDarkMode ? '#FFD700' : '#000' }]}>صُحُف</Text>

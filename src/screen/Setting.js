@@ -139,11 +139,7 @@ export default function Setting() {
             //   image: require("../assets/images/NotiBG.png"),
             //   screen: "Notification",
             // },
-            {
-              label: "الدعم",
-              image: require("../assets/images/customer-support_4526832.png"),
-              screen: "SupportScreen",
-            },
+         
             {
               label: "مشاركة",
               image: require("../assets/images/share.png"),
