@@ -98,10 +98,10 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file('My Denzen.keystore')
-            storePassword 'My Denzen123@'
-            keyAlias 'arbitech_key_alias'
-            keyPassword 'My Denzen123@'
+            storeFile file('SohafApp123@')
+            storePassword 'SohafApp123@'
+            keyAlias 'SohafApp123@'
+            keyPassword 'SohafApp123@'
         }
     }
 

@@ -10,9 +10,9 @@ export default function BlogDetails() {
   const route = useRoute();
   const navigation = useNavigation();
   const { blog } = route.params;
-  const [isApproved, setIsApproved] = useState(false); // State to handle button visibility
+  const [isApproved, setIsApproved] = useState(false); 
   const { user_detail } = useSelector((state) => state.userReducer);
-  const { isDarkMode, toggleTheme } = useThemeContext(); // Access dark mode from context
+  const { isDarkMode, toggleTheme } = useThemeContext(); 
 
   const colors = {
     background: isDarkMode ? '#121212' : '#fff',
@@ -104,13 +104,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    textAlign: 'right', // Arabic alignment
+    textAlign: 'right', 
   },
   blogDescription: {
     fontSize: 14,
     lineHeight: 24,
     marginBottom: 20,
-    textAlign: 'right', // Arabic alignment
+    textAlign: 'right', 
   },
   approveButton: {
     padding: 15,

@@ -9,7 +9,7 @@ import {
   Animated,
   ScrollView,
   Modal,
-  ImageBackground,  // Import ImageBackground
+  ImageBackground,  
   Image,
 } from "react-native";
 import { useDispatch } from "react-redux";
@@ -19,7 +19,7 @@ import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/go
 import { FontFamily } from "../../constants/fonts";
 import { useNavigation } from "@react-navigation/native";
 import { SetUserDetail, SetUserToken } from "../../Redux/actions/actions";
-import { ToastMessage } from "../../utils/helpers";
+import { helpers, ToastMessage } from "../../utils/helpers";
 import DeviceInfo from "react-native-device-info";
 import messaging from "@react-native-firebase/messaging";
 import CustomButton from "../../component/Buttons/customButton";
@@ -55,12 +55,7 @@ const Login = () => {
     pulse();
   }, [pulseAnim]);
 
-  useEffect(() => {
-    GoogleSignin.configure({
-      offlineAccess: true,
-      webClientId: '142037914632-fhe2j3362nmmnpek7mnbmseo3pv99hbe.apps.googleusercontent.com',
-    });
-  }, []);
+
 
   const validateField = () => {
     const cleanedEmail = userEmail.trim();
@@ -115,7 +110,7 @@ const Login = () => {
           redirect: "follow",
         };
   
-        fetch(`https://dodgerblue-chinchilla-339711.hostingersite.com/api/login`, requestOptions)
+        fetch(`${helpers.api.baseUrl}/login`, requestOptions)
           .then((response) => response.json())
           .then((result) => {
             if (result?.success === "Login Successfully") {
@@ -152,62 +147,7 @@ const Login = () => {
     }
   };
   
-  // const loginHandle = async () => {
-  //   try {
-  //     if (validateField()) {
-  //       setLoader(true);
-  //       const myHeaders = new Headers();
-  //       let fcmToken = "";
-  //       const deviceId = await DeviceInfo.getUniqueId();
-  //       await messaging().registerDeviceForRemoteMessages();
 
-  //       const authStatus = await messaging().requestPermission();
-  //       const enabled =
-  //         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-  //         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-  //       if (enabled) {
-  //         fcmToken = await messaging().getToken();
-  //       }
-
-  //       const formdata = new FormData();
-  //       formdata.append("email", userEmail);
-  //       formdata.append("password", userPassword);
-  //       formdata.append("device_id", deviceId);
-  //       formdata.append("device_type", Platform.OS);
-  //       formdata.append("device_token", fcmToken);
-
-  //       const requestOptions = {
-  //         method: "POST",
-  //         headers: myHeaders,
-  //         body: formdata,
-  //         redirect: "follow",
-  //       };
-
-  //       fetch(`https://dodgerblue-chinchilla-339711.hostingersite.com/api/login`, requestOptions)
-  //         .then((response) => response.json())
-  //         .then((result) => {
-  //           if (result?.success === "Login Successfully") {
-  //             setLoader(false);
-  //             const accessToken = result?.user?.device_token;
-  //             dispatch(SetUserToken(accessToken));
-  //             console.log("loogin api ====>" +JSON.stringify(result))
-  //             navigation.navigate("AdminScreen");
-  //           } else {
-  //             setLoader(false);
-  //             ToastMessage(result?.message);
-  //           }
-  //         })
-  //         .catch((error) => {
-  //           setLoader(false);
-  //           ToastMessage(error?.message);
-  //         });
-  //     }
-  //   } catch (error) {
-  //     setLoader(false);
-  //     ToastMessage(error?.message);
-  //   }
-  // };
 
 
   return (

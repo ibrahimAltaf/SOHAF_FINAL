@@ -15,7 +15,7 @@ import { useDispatch } from "react-redux";
 import { theme } from "../../constants/styles";
 import { TextInput, Avatar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import { ToastMessage } from "../../utils/helpers";
+import { helpers, ToastMessage } from "../../utils/helpers";
 import { SetUserDetail, SetUserToken } from "../../Redux/actions/actions";
 import CustomButton from "../../component/Buttons/customButton";
 import CustomStatusBar from "../../component/StatusBar/customStatusBar";
@@ -142,7 +142,7 @@ const SignUp = () => {
         formdata.append("device_token", fcmToken);
         formdata.append("device_type", Platform.OS);
 
-        fetch("https://dodgerblue-chinchilla-339711.hostingersite.com/api/signup", {
+        fetch(`${helpers.api.baseUrl}/signup`, {
           method: "POST",
           headers: {
             "X-Requested-With": "XMLHttpRequest",

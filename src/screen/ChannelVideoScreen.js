@@ -15,9 +15,9 @@ const ChannelVideoScreen = (props) => {
       <Header title={"الأخبار الحية"} backArrow backPage={() => props.navigation.goBack()} />
       <View style={styles.container}>
         <WebView
-          source={{ uri: channel.link }} // تحميل رابط الفيديو الكامل
+          source={{ uri: channel.link }} 
           style={styles.webView}
-          startInLoadingState={true} // عرض مؤشر التحميل حتى يتم تحميل الفيديو
+          startInLoadingState={true} 
         />
 
         {/* معلومات القناة */}
@@ -53,14 +53,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: theme.color.black,
-    marginLeft: 15, // زيادة المسافة للحصول على تباعد أفضل من الصورة
+    marginLeft: 15, 
     flexShrink: 1,
   },
   logo: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#ccc', // لون خلفية بديل في حال عدم وجود صورة
+    backgroundColor: '#ccc', 
   },
 });
 
