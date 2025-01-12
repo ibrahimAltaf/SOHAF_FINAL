@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   useColorScheme,
+  ImageBackground, // Import ImageBackground
 } from "react-native";
 import { theme } from "../constants/styles";
 import axios from "axios";
@@ -77,17 +78,28 @@ export default function Visitor() {
   };
 
   // Fetch news blogs
-  const fetchNewsBlogs = async () => {
-    try {
-      const response = await axios.get(
-        "https://dodgerblue-chinchilla-339711.hostingersite.com/api/visitor/blogs-url/1"
-      );
-      return response.data || [];
-    } catch (error) {
-      console.error("Error fetching news blogs:", error);
-      return [];
-    }
-  };
+// Fetch news blogs
+const fetchNewsBlogs = async () => {
+  try {
+    const response = await axios.get(
+      "https://dodgerblue-chinchilla-339711.hostingersite.com/api/visitor/blogs-url/1"
+    );
+    // Map the response to extract necessary fields
+    return response.data.map((blog) => ({
+      id: blog.id,
+      name: blog.name.trim(),
+      image: blog.image || "https://default-image-url.com", // Use a default image if missing
+      url: blog.url,
+      createdAt: blog.created_at,
+      updatedAt: blog.updated_at,
+    }));
+  } catch (error) {
+    console.error("Error fetching news blogs:", error);
+    return [];
+  }
+};
+
+  
 
   // Styles based on dark mode
   const styles = getStyles(isDarkMode);
@@ -98,15 +110,16 @@ export default function Visitor() {
   };
 
   return (
+    // Background Image wrapped around the entire view
+    <ImageBackground
+    source={require("../assets/images/arabicnewsbg.jpg")} 
 
-
-<>
-<View style={styles.container}>
-<Header title="صُحف "  />
+    style={styles.container}
+  >
+      <Header title="صُحف " />
 
       {/* Loading State */}
       {loading ? (
-
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFD700" />
         </View>
@@ -141,50 +154,68 @@ export default function Visitor() {
 
           {/* News Blogs Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>مدونات الأخبار</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {newsBlogs.length > 0 ? (
-                newsBlogs.map((blog) => (
-                  <TouchableOpacity
-                    key={blog.id}
-                    style={styles.blogCard}
-                    onPress={() => navigation.navigate("NewsBlogPage", { url: blog.url })}
-                  >
-                    <Image
-                      source={{
-                        uri: blog.image || "https://default-image-url.com",
-                      }}
-                      style={styles.blogImage}
-                    />
-                    <Text style={styles.blogTitle}>{blog.name}</Text>
-                  </TouchableOpacity>
-                ))
-              ) : (
-                <Text style={styles.emptyMessage}>لا توجد مدونات أخبار متاحة.</Text>
-              )}
-            </ScrollView>
+  <Text style={styles.sectionTitle}>مدونات الأخبار</Text>
+  <ScrollView showsHorizontalScrollIndicator={false}>
+    {newsBlogs.length > 0 ? (
+      newsBlogs.map((article, index) => (
+        <TouchableOpacity
+          key={index} // Use index as the key
+          style={styles.blogCard}
+          onPress={() => navigation.navigate("NewsBlogPage", { url: article.url })}
+        >
+          {/* Image Section */}
+          <View style={{ width: "30%", height: "100%" }}>
+            <Image
+              source={{
+                uri: article.image || "https://default-image-url.com", // Updated to use 'image' field from API
+              }}
+              style={styles.blogImage}
+            />
           </View>
+          {/* Text Section */}
+          <View style={{ width: "70%", height: "100%" }}>
+            <Text numberOfLines={2} style={styles.blogTitle}>{article.name}</Text>
+          
+          </View>
+        </TouchableOpacity>
+      ))
+    ) : (
+      <Text style={styles.emptyMessage}>لا توجد مدونات أخبار متاحة.</Text>
+    )}
+  </ScrollView>
+</View>
+
+
 
           {/* Latest Blogs Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>أحدث المدونات</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {
+            <ScrollView  showsHorizontalScrollIndicator={false}>
+              {blogs.length > 0 ? (
                 blogs.map((blog, index) => (
                   <TouchableOpacity
                     key={index}
                     style={styles.blogCard}
                     onPress={() => navigation.navigate("BlogDetails", { blog })}
                   >
-                    <Image source={{ uri: blog.image }} style={styles.blogImage} />
+                  <View style={{ width: "30%", height: "100%" }}>
+                    <Image
+                      source={{ uri: blog.image }}
+                      style={styles.blogImage}
+                    />
+                    </View>
+                    <View style={{ width: "70%", height: "100%" }}>
                     <Text style={styles.blogTitle}>{blog.title}</Text>
                     <Text numberOfLines={2} style={styles.blogDescription}>
                       {blog.description}
                     </Text>
+                    </View>
+                   
                   </TouchableOpacity>
                 ))
-         
-              }
+              ) : (
+                <Text style={styles.emptyMessage}>لا توجد مدونات متاحة.</Text>
+              )}
             </ScrollView>
           </View>
         </ScrollView>
@@ -192,8 +223,7 @@ export default function Visitor() {
 
       {/* Footer Section */}
       <VisitorBottom />
-    </View>
-</>
+    </ImageBackground>
   );
 }
 
@@ -219,8 +249,9 @@ const getStyles = (isDarkMode) =>
     sectionTitle: {
       fontSize: 16,
       fontWeight: "bold",
-      color: isDarkMode ? "#fff" : theme.color.black,
+      color: isDarkMode ? "#fff" : theme.color.white,
       marginBottom: 10,
+ 
     },
     channelItem: {
       alignItems: "center",
@@ -244,28 +275,29 @@ const getStyles = (isDarkMode) =>
       fontWeight: "900",
     },
     blogCard: {
-      width: 220,
+      gap:10,
       marginRight: 10,
-      padding: 15,  // Added some extra padding for better spacing
+      flexDirection:"row",
       backgroundColor: isDarkMode ? "#333" : theme.color.white,
-      marginBottom:10,      
-      // Premium Box Shadow Styling
-      shadowColor: "#000",  // Dark shadow color for a clean, strong look
-      shadowOffset: { width: 0, height: 10 },  // Larger vertical offset for more elevation
-      shadowOpacity: 0.2,  // Slightly lower opacity for a soft but noticeable shadow
-      shadowRadius: 15,  // Larger blur radius for a smoother, more diffused shadow
-      borderRadius:10,
+      marginBottom: 10,
+      padding: 10,
+      shadowColor: "#000", // Dark shadow color for a clean, strong look
+      shadowOffset: { width: 0, height: 10 }, // Larger vertical offset for more elevation
+      shadowOpacity: 0.2, // Slightly lower opacity for a soft but noticeable shadow
+      shadowRadius: 15, // Larger blur radius for a smoother, more diffused shadow
+      borderRadius: 10,
       elevation: 8, // Ensures shadow appears on Android with a decent level of elevation
     },
-    
     blogImage: {
       width: "100%",
-      height: 120,
+      height: 50,
       borderRadius: 10,
-      marginBottom: 10,
+
+      objectFit:"cover"
     },
     blogTitle: {
       fontSize: 14,
+      padding:10,
       fontWeight: "bold",
       color: isDarkMode ? "#fff" : theme.color.black,
     },

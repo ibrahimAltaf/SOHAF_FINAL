@@ -7,6 +7,7 @@ import CustomButton from '../../component/Buttons/customButton';
 import VisitorBottom from '../VisitorBottom';
 import { theme } from '../../constants/styles';
 import CustomStatusBar from '../../component/StatusBar/customStatusBar';
+import { ImageBackground } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -33,7 +34,13 @@ export default function VisitorHomeScreen({ navigation }) {
 
   return (
     <>
-      <View style={[styles.container, { backgroundColor: isDarkMode ? '#1a1a1a' : '#f2f2f2' }]}>
+        <ImageBackground
+      source={require("../../assets/images/arabicnewsbg.jpg")} 
+      style={[styles.container]}
+    >
+      <View style={{
+        paddingHorizontal:20,
+      }}>
         <View style={styles.userRow}>
          
           <View>
@@ -111,6 +118,8 @@ export default function VisitorHomeScreen({ navigation }) {
         )}
       </View>
 
+
+      </ImageBackground>
       <VisitorBottom />
     </>
   );
@@ -119,7 +128,6 @@ export default function VisitorHomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 15,
     paddingTop: 20,
   },
   userRow: {
